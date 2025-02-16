@@ -7,7 +7,7 @@ cd TextBookExchange-Backend/
 ./gradlew bootRun
 ```
 
-Access PostgreSQL DB:
+## Access PostgreSQL DB:
 
 ```psql
 psql -U postgres
