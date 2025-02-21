@@ -3,6 +3,8 @@
 
 package com.mcgill.ecse428.textbook_exchange.model;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -19,7 +21,8 @@ public class CartItem
 
   //CartItem Attributes
   @Id
-  private String cartItemID;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private String cartItemId;
 
   //CartItem Associations
   @ManyToOne
@@ -34,9 +37,9 @@ public class CartItem
   // CONSTRUCTOR
   //------------------------
 
-  public CartItem(String aCartItemID, Listing aListing, Cart aCart)
+  public CartItem( Listing aListing, Cart aCart)
   {
-    cartItemID = aCartItemID;
+
     if (!setListing(aListing))
     {
       throw new RuntimeException("Unable to create CartItem due to aListing. See https://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
@@ -51,17 +54,10 @@ public class CartItem
   // INTERFACE
   //------------------------
 
-  public boolean setCartItemID(String aCartItemID)
-  {
-    boolean wasSet = false;
-    cartItemID = aCartItemID;
-    wasSet = true;
-    return wasSet;
-  }
 
-  public String getCartItemID()
+  public String getcartItemId()
   {
-    return cartItemID;
+    return cartItemId;
   }
   /* Code from template association_GetOne */
   public Listing getListing()
@@ -110,7 +106,7 @@ public class CartItem
   public String toString()
   {
     return super.toString() + "["+
-            "cartItemID" + ":" + getCartItemID()+ "]" + System.getProperties().getProperty("line.separator") +
+            "cartItemId" + ":" + getcartItemId()+ "]" + System.getProperties().getProperty("line.separator") +
             "  " + "listing = "+(getListing()!=null?Integer.toHexString(System.identityHashCode(getListing())):"null") + System.getProperties().getProperty("line.separator") +
             "  " + "cart = "+(getCart()!=null?Integer.toHexString(System.identityHashCode(getCart())):"null");
   }

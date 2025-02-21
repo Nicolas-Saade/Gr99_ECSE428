@@ -25,7 +25,6 @@ public class Course
   private Faculty faculty;
 
   @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
   private String courseId;
 
   //------------------------

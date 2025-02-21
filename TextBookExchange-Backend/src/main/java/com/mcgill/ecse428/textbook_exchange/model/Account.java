@@ -36,6 +36,7 @@ public abstract class Account
     password = aPassword;
     phoneNumber = aPhoneNumber;
   }
+  protected Account() {}
 
   //------------------------
   // INTERFACE

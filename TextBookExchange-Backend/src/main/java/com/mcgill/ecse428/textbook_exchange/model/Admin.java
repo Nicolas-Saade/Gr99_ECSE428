@@ -23,6 +23,7 @@ public class Admin extends Account
   {
     super(aEmail, aUsername, aPassword, aPhoneNumber);
   }
+  protected Admin() {}
 
   //------------------------
   // INTERFACE

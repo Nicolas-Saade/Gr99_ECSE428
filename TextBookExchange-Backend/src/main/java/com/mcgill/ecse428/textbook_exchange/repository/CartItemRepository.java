@@ -8,6 +8,6 @@ import org.springframework.data.repository.CrudRepository;
 import com.mcgill.ecse428.textbook_exchange.model.CartItem;
 
 public interface CartItemRepository extends CrudRepository<CartItem, String> {
-    public CartItem findByCartItemID(String cartItemID);
+    public CartItem findByCartItemId(String cartItemId);
     
 }
