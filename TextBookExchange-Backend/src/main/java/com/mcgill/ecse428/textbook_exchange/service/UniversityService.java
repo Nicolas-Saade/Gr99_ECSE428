@@ -1,4 +1,6 @@
 package com.mcgill.ecse428.textbook_exchange.service;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -140,6 +142,15 @@ public class UniversityService {
     public void deleteCourse(String courseId) {
         Course course = getCourse(courseId);
         courseRepository.delete(course);
+    }
+
+    public List<Faculty> getAllFaculties(String validInstitution) {
+        Institution institution = getInstitution(validInstitution);
+        List<Faculty> faculties = facultyRepository.findByInstitution(institution);
+        if (faculties == null) {
+            throw new TextBookExchangeException(HttpStatus.NOT_FOUND,"No faculties found");
+        }
+        return faculties;
     }
 }
 
