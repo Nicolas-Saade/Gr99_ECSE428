@@ -184,6 +184,29 @@ public class UniversityServiceTests {
         universityService.deleteInstitution(VALID_INSTITUTION);
         verify(mockInstitutionRepository, times(1)).delete(institution);
     }
+    @Test
+    public void testDeleteInstitutionWithEmptyName() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.deleteInstitution(INVALID_EMPTY));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Institution name cannot be empty", exception.getMessage());
+    }
+    @Test
+    public void testDeleteInstitutionWithNullName() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.deleteInstitution(INVALID_NULL));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Institution name cannot be empty", exception.getMessage());
+    }
+    @Test
+    public void testDeleteInstitutionNotFound() {
+        when(mockInstitutionRepository.findByInstitutionName(VALID_INSTITUTION)).thenReturn(null);
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.deleteInstitution(VALID_INSTITUTION));
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals("Institution not found", exception.getMessage());
+        verify(mockInstitutionRepository, times(1)).findByInstitutionName(VALID_INSTITUTION);
+    }
     
     
     //====================== Faculty Tests ======================
@@ -314,6 +337,34 @@ public class UniversityServiceTests {
         assertEquals("Department name cannot be empty", exception.getMessage());
         verify(mockFacultyRepository, never()).save(any(Faculty.class));
     }
+
+    @Test
+    public void testUpdateFacultyWithNullNewName() {
+        Faculty faculty = new Faculty(VALID_DEPARTMENT, new Institution(VALID_INSTITUTION));
+        when(mockFacultyRepository.findByDepartmentName(VALID_DEPARTMENT)).thenReturn(faculty);
+        
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.updateFaculty(VALID_DEPARTMENT, INVALID_NULL));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Department name cannot be empty", exception.getMessage());
+        verify(mockFacultyRepository, never()).save(any(Faculty.class));
+    }
+    @Test
+    public void testUpdateFacultyWithEmptyDepartmentName() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.updateFaculty(INVALID_EMPTY, VALID_DEPARTMENT_NEW));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Department name cannot be empty", exception.getMessage());
+    }
+    @Test
+    public void testUpdateFacultyWithNullDepartmentName() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.updateFaculty(INVALID_NULL, VALID_DEPARTMENT_NEW));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Department name cannot be empty", exception.getMessage());
+    }
+
+
     
     @Test
     public void testDeleteFacultySuccess() {
@@ -322,6 +373,29 @@ public class UniversityServiceTests {
         
         universityService.deleteFaculty(VALID_DEPARTMENT);
         verify(mockFacultyRepository, times(1)).delete(faculty);
+    }
+    @Test
+    public void testDeleteFacultyWithEmptyDepartmentName() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.deleteFaculty(INVALID_EMPTY));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Department name cannot be empty", exception.getMessage());
+    }
+    @Test
+    public void testDeleteFacultyWithNullDepartmentName() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.deleteFaculty(INVALID_NULL));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Department name cannot be empty", exception.getMessage());
+    }
+    @Test
+    public void testDeleteFacultyNotFound() {
+        when(mockFacultyRepository.findByDepartmentName(VALID_DEPARTMENT)).thenReturn(null);
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.deleteFaculty(VALID_DEPARTMENT));
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals("Faculty not found", exception.getMessage());
+        verify(mockFacultyRepository, times(1)).findByDepartmentName(VALID_DEPARTMENT);
     }
     
     
@@ -357,6 +431,43 @@ public class UniversityServiceTests {
         assertEquals("Course ID cannot be empty", exception.getMessage());
         verify(mockCourseRepository, never()).save(any(Course.class));
     }
+    @Test
+    public void testCreateCourseWithNullCourseId() {
+        Faculty faculty = new Faculty(VALID_DEPARTMENT, new Institution(VALID_INSTITUTION));
+        when(mockFacultyRepository.findByDepartmentName(VALID_DEPARTMENT)).thenReturn(faculty);
+        
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.createCourse(INVALID_NULL, VALID_DEPARTMENT));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Course ID cannot be empty", exception.getMessage());
+        verify(mockCourseRepository, never()).save(any(Course.class));
+    }
+    @Test
+    public void testCreateCourseWithEmptyDepartmentName() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.createCourse(VALID_COURSE, INVALID_EMPTY));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Department name cannot be empty", exception.getMessage());
+        verify(mockCourseRepository, never()).save(any(Course.class));
+    }
+    @Test
+    public void testCreateCourseWithNullDepartmentName() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.createCourse(VALID_COURSE, INVALID_NULL));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Department name cannot be empty", exception.getMessage());
+        verify(mockCourseRepository, never()).save(any(Course.class));
+    }
+    @Test
+    public void testCreateCourseWithNonExistantDepartment() {
+        when(mockFacultyRepository.findByDepartmentName(VALID_DEPARTMENT)).thenReturn(null);
+        
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.createCourse(VALID_COURSE, VALID_DEPARTMENT));
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals("Faculty not found", exception.getMessage());
+        verify(mockCourseRepository, never()).save(any(Course.class));
+    }
     
     @Test
     public void testGetCourseSuccess() {
@@ -378,6 +489,34 @@ public class UniversityServiceTests {
         assertEquals("Course not found", exception.getMessage());
         verify(mockCourseRepository, times(1)).findByCourseId(VALID_COURSE);
     }
+    @Test
+    public void testGetCourseWithEmptyCourseId() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.getCourse(INVALID_EMPTY));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Course ID cannot be empty", exception.getMessage());
+    }
+    @Test
+    public void testGetCourseWithNullCourseId() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.getCourse(INVALID_NULL));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Course ID cannot be empty", exception.getMessage());
+    }
+    @Test
+    public void testGetAllCourses() {
+        Faculty faculty = new Faculty(VALID_DEPARTMENT, new Institution(VALID_INSTITUTION));
+        Course course1 = new Course("ECSE428",faculty);
+        Course course2 = new Course("ECSE429",faculty);
+        when(mockFacultyRepository.findByDepartmentName(VALID_DEPARTMENT)).thenReturn(faculty);
+        when(mockCourseRepository.findByFaculty(faculty)).thenReturn(Arrays.asList(course1, course2));
+
+        List<Course> courses = universityService.getAllCourses(VALID_DEPARTMENT);
+        assertNotNull(courses);
+        assertEquals(2, courses.size());
+        assertTrue(courses.contains(course1));
+        assertTrue(courses.contains(course2));
+    }
     
     @Test
     public void testUpdateCourseSuccess() {
@@ -390,6 +529,51 @@ public class UniversityServiceTests {
         assertNotNull(updated);
         assertEquals(VALID_COURSE_NEW, updated.getCourseId());
     }
+    @Test
+    public void testUpdateCourseWithEmptyNewCourseId() {
+        Course course = new Course(VALID_COURSE, new Faculty(VALID_DEPARTMENT, new Institution(VALID_INSTITUTION)));
+        when(mockCourseRepository.findByCourseId(VALID_COURSE)).thenReturn(course);
+        
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.updateCourse(VALID_COURSE, INVALID_EMPTY));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Course ID cannot be empty", exception.getMessage());
+        verify(mockCourseRepository, never()).save(any(Course.class));
+    }
+    @Test
+    public void testUpdateCourseWithNullNewCourseId() {
+        Course course = new Course(VALID_COURSE, new Faculty(VALID_DEPARTMENT, new Institution(VALID_INSTITUTION)));
+        when(mockCourseRepository.findByCourseId(VALID_COURSE)).thenReturn(course);
+        
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.updateCourse(VALID_COURSE, INVALID_NULL));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Course ID cannot be empty", exception.getMessage());
+        verify(mockCourseRepository, never()).save(any(Course.class));
+    }
+    @Test
+    public void testUpdateCourseWithEmptyCourseId() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.updateCourse(INVALID_EMPTY, VALID_COURSE_NEW));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Course ID cannot be empty", exception.getMessage());
+    }
+    @Test
+    public void testUpdateCourseWithNullCourseId() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.updateCourse(INVALID_NULL, VALID_COURSE_NEW));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Course ID cannot be empty", exception.getMessage());
+    }
+    @Test
+    public void testUpdateCourseNotFound() {
+        when(mockCourseRepository.findByCourseId(VALID_COURSE)).thenReturn(null);
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.updateCourse(VALID_COURSE, VALID_COURSE_NEW));
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals("Course not found", exception.getMessage());
+        verify(mockCourseRepository, times(1)).findByCourseId(VALID_COURSE);
+    }
     
     @Test
     public void testDeleteCourseSuccess() {
@@ -399,4 +583,28 @@ public class UniversityServiceTests {
         universityService.deleteCourse(VALID_COURSE);
         verify(mockCourseRepository, times(1)).delete(course);
     }
+    @Test
+    public void testDeleteCourseWithEmptyCourseId() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.deleteCourse(INVALID_EMPTY));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Course ID cannot be empty", exception.getMessage());
+    }
+    @Test
+    public void testDeleteCourseWithNullCourseId() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.deleteCourse(INVALID_NULL));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Course ID cannot be empty", exception.getMessage());
+    }
+    @Test
+    public void testDeleteCourseNotFound() {
+        when(mockCourseRepository.findByCourseId(VALID_COURSE)).thenReturn(null);
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> universityService.deleteCourse(VALID_COURSE));
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals("Course not found", exception.getMessage());
+        verify(mockCourseRepository, times(1)).findByCourseId(VALID_COURSE);
+    }
+
 }

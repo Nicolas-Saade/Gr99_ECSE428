@@ -122,6 +122,9 @@ public class UniversityService {
 
     @Transactional
     public Course getCourse(String courseId) {
+        if (courseId == null || courseId.trim().isEmpty()) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Course ID cannot be empty");
+        }
         Course course = courseRepository.findByCourseId(courseId);
         if (course == null) {
             throw new TextBookExchangeException(HttpStatus.NOT_FOUND,"Course not found");
@@ -133,6 +136,9 @@ public class UniversityService {
     @Transactional
     public Course updateCourse(String courseId, String newCourseId) {
         Course course = getCourse(courseId);
+        if (newCourseId == null || newCourseId.trim().isEmpty()) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Course ID cannot be empty");
+        }
         course.setCourseId(newCourseId);
         return courseRepository.save(course);
     }
@@ -152,6 +158,16 @@ public class UniversityService {
         }
         return faculties;
     }
+
+    public List<Course> getAllCourses(String validDepartment) {
+        Faculty faculty = getFaculty(validDepartment);
+        List<Course> courses = courseRepository.findByFaculty(faculty);
+        if (courses == null) {
+            throw new TextBookExchangeException(HttpStatus.NOT_FOUND,"No courses found");
+        }
+        return courses;
+    }
+       
 }
 
     
