@@ -31,12 +31,15 @@ public class Course
   // CONSTRUCTOR
   //------------------------
 
-  public Course(Faculty aFaculty)
+  public Course(String courseId,Faculty aFaculty)
   {
-    if (!setFaculty(aFaculty))
+    if (aFaculty == null)
     {
       throw new RuntimeException("Unable to create Course due to aFaculty. See https://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
     }
+    
+    this.faculty = aFaculty;
+    this.courseId = courseId;
   }
 
   //------------------------
@@ -62,6 +65,15 @@ public class Course
   public void delete()
   {
     faculty = null;
+  }
+
+  public String getCourseId()
+  {
+    return courseId;
+  }
+  public void setCourseId(String aCourseId)
+  {
+    courseId = aCourseId;
   }
 
 }
