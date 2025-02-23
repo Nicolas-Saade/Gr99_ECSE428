@@ -47,6 +47,7 @@ public class User extends Account
       throw new RuntimeException("Unable to create User due to aCart. See https://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
     }
   }
+  protected User() {}
 
   //------------------------
   // INTERFACE
