@@ -136,7 +136,7 @@ public class AccountService {
         if (password != null && !password.trim().isEmpty()) {
             user.setPassword(password);
         }
-        if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
+        if (phoneNumber != null && !phoneNumber.trim().isEmpty() && phoneNumber.replaceAll("[^0-9]", "").length() == phoneNumber.length()) {
             user.setPhoneNumber(phoneNumber);
         }
         userRepository.save(user);

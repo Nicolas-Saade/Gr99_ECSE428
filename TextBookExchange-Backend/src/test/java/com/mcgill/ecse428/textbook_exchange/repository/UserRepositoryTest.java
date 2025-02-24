@@ -1,21 +1,17 @@
 package com.mcgill.ecse428.textbook_exchange.repository;
 
-import static org.junit.jupiter.api.Assertions.*;
-import com.mcgill.ecse428.textbook_exchange.model.User;
-import com.mcgill.ecse428.textbook_exchange.model.Admin;
-import com.mcgill.ecse428.textbook_exchange.model.Cart;
-import com.mcgill.ecse428.textbook_exchange.model.User;
-
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-
 import org.springframework.boot.test.context.SpringBootTest;
+
+import com.mcgill.ecse428.textbook_exchange.model.Cart;
+import com.mcgill.ecse428.textbook_exchange.model.User;
 
 
 
@@ -124,7 +120,4 @@ public class UserRepositoryTest {
         assertEquals(newCartId, ((User) userRetreived).getCart().getCartId(), "Cart Id should be the new cart id");
         
     }
-
-    
-
 }

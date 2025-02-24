@@ -3,8 +3,6 @@
 
 package com.mcgill.ecse428.textbook_exchange.model;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -31,6 +29,10 @@ public class Course
   // CONSTRUCTOR
   //------------------------
 
+  protected Course() {
+    // Required empty constructor for JPA
+  }
+  
   public Course(String courseId,Faculty aFaculty)
   {
     if (aFaculty == null)

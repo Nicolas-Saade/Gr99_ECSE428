@@ -23,6 +23,10 @@ public class Institution
   // CONSTRUCTOR
   //------------------------
 
+  protected Institution() {
+    // Required empty constructor for JPA
+  }
+
   public Institution(String aInstitutionName)
   {
     institutionName = aInstitutionName;
