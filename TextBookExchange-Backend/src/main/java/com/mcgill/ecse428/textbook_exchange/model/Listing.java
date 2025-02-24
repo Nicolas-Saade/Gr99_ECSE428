@@ -50,6 +50,10 @@ public class Listing
   // CONSTRUCTOR
   //------------------------
 
+  public Listing()
+  {
+  }
+
   public Listing(String aBookName, String aISBN, float aPrice, LocalDate aDatePosted, User aUser, Course aCourse)
   {
     bookName = aBookName;
@@ -58,14 +62,19 @@ public class Listing
     listingStatus = ListingStatus.Available;
     price = aPrice;
     datePosted = aDatePosted;
-    if (!setUser(aUser))
-    {
-      throw new RuntimeException("Unable to create Listing due to aUser. See https://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
+    
+    try {
+        setUser(aUser);
+    } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("Cannot create due to null user");
     }
-    if (!setCourse(aCourse))
-    {
-      throw new RuntimeException("Unable to create Listing due to aCourse. See https://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
+    
+    try {
+        setCourse(aCourse);
+    } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("Cannot create due to null course");
     }
+    
   }
 
   //------------------------

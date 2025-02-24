@@ -31,6 +31,10 @@ public class Course
   // CONSTRUCTOR
   //------------------------
 
+  public Course()
+  {
+  }
+
   public Course(String courseId,Faculty aFaculty)
   {
     if (aFaculty == null)

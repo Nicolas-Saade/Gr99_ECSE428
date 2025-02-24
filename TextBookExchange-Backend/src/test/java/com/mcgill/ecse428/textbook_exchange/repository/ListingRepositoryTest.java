@@ -33,10 +33,15 @@ public class ListingRepositoryTest {
 
     @Autowired
     private ListingRepository listingRepository;
-    private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;    
+    @Autowired
     private CartRepository cartRepository;
+    @Autowired
     private CourseRepository courseRepository;
+    @Autowired
     private FacultyRepository facultyRepository;
+    @Autowired
     private InstitutionRepository institutionRepository;
 
 
@@ -69,7 +74,6 @@ public class ListingRepositoryTest {
         // Create and save a new cart
         Cart aCart = new Cart();
         aCart = cartRepository.save(aCart);
-        String cartId = aCart.getCartId();
 
         // Create a new user
         User user = new User( aEmail,  aUsername,  aPassword,  aPhoneNumber,  aCart);
@@ -101,11 +105,11 @@ public class ListingRepositoryTest {
 
 
         Listing listing = new Listing(ISBN, bookName, price, date, user, course);
+     
+     
         listing = listingRepository.save(listing);
-
-    
-
         Listing listingRetreived = listingRepository.findByISBN(ISBN);
+        
         assertNotNull(listingRetreived);    
         assertEquals(ISBN, listingRetreived.getISBN());
         assertEquals(bookName, listingRetreived.getBookName()); 

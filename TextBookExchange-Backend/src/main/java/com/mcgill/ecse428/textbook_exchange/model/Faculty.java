@@ -29,6 +29,10 @@ public class Faculty
   // CONSTRUCTOR
   //------------------------
 
+  public Faculty()
+  {
+  }
+
   public Faculty(String aDepartmentName, Institution aInstitution)
   {
     departmentName = aDepartmentName;
