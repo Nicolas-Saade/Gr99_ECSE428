@@ -3,12 +3,14 @@ package com.mcgill.ecse428.textbook_exchange.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -243,7 +245,7 @@ public class AccountServiceTests {
     }
 
     
-    // //==================== User Tests ====================
+    //==================== User Tests ====================
     
     @Test
 public void testCreateValidUser() {
@@ -419,6 +421,25 @@ public void testUpdateUserNotFound() {
     assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
     assertEquals("User not found", exception.getMessage());
     verify(mockUserRepository, never()).save(any(User.class));
+}
+
+@Test
+public void testUpdateUserWithInvalidPhoneNumber() {
+    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+    when(mockUserRepository.save(any(User.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    
+    String newUsername = "updatedUser";
+    String newPassword = "updatedPass";
+    String newPhone = "123aax";
+    
+    User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
+
+    assertNotNull(updated);
+    assertEquals(newUsername, updated.getUsername());
+    assertEquals(newPassword, updated.getPassword());
+    assertEquals(VALID_PHONE_USER, updated.getPhoneNumber());
 }
 
 @Test

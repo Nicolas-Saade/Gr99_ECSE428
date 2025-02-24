@@ -29,6 +29,10 @@ public class Faculty
   // CONSTRUCTOR
   //------------------------
 
+  protected Faculty() {
+    // Required empty constructor for JPA
+  }
+
   public Faculty(String aDepartmentName, Institution aInstitution)
   {
     departmentName = aDepartmentName;
