@@ -22,6 +22,9 @@ public class Institution
   //------------------------
   // CONSTRUCTOR
   //------------------------
+  
+  public Institution() {
+  }
 
   public Institution() {
     // Required empty constructor for JPA

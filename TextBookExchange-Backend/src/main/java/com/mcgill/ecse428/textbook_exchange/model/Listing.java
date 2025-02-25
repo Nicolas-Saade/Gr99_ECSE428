@@ -50,6 +50,10 @@ public class Listing
   // CONSTRUCTOR
   //------------------------
 
+  public Listing()
+  {
+  }
+
   public Listing(String aBookName, String aISBN, float aPrice, LocalDate aDatePosted, User aUser, Course aCourse)
   {
     bookName = aBookName;
@@ -58,66 +62,57 @@ public class Listing
     listingStatus = ListingStatus.Available;
     price = aPrice;
     datePosted = aDatePosted;
-    if (!setUser(aUser))
-    {
-      throw new RuntimeException("Unable to create Listing due to aUser. See https://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
+    
+    try {
+        setUser(aUser);
+    } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("Cannot create due to null user");
     }
-    if (!setCourse(aCourse))
-    {
-      throw new RuntimeException("Unable to create Listing due to aCourse. See https://manual.umple.org?RE002ViolationofAssociationMultiplicity.html");
+    
+    try {
+        setCourse(aCourse);
+    } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("Cannot create due to null course");
     }
+    
   }
 
   //------------------------
   // INTERFACE
   //------------------------
 
-  public boolean setBookName(String aBookName)
+  public Listing(String iSBN2, String bookName2, BookCondition condition, float price2, LocalDate datePosted2) {
+    //TODO Auto-generated constructor stub
+}
+
+public void setBookName(String aBookName)
   {
-    boolean wasSet = false;
-    bookName = aBookName;
-    wasSet = true;
-    return wasSet;
+    this.bookName = aBookName;
   }
 
-  public boolean setISBN(String aISBN)
+  public void setISBN(String aISBN)
   {
-    boolean wasSet = false;
-    ISBN = aISBN;
-    wasSet = true;
-    return wasSet;
+    this.ISBN = aISBN;
   }
 
-  public boolean setBookcondition(BookCondition aBookcondition)
+  public void setBookcondition(BookCondition aBookcondition)
   {
-    boolean wasSet = false;
-    bookcondition = aBookcondition;
-    wasSet = true;
-    return wasSet;
+    this.bookcondition = aBookcondition;
   }
 
-  public boolean setListingStatus(ListingStatus aListingStatus)
+  public void setListingStatus(ListingStatus aListingStatus)
   {
-    boolean wasSet = false;
-    listingStatus = aListingStatus;
-    wasSet = true;
-    return wasSet;
+    this.listingStatus = aListingStatus;
   }
 
-  public boolean setPrice(float aPrice)
+  public void setPrice(float aPrice)
   {
-    boolean wasSet = false;
-    price = aPrice;
-    wasSet = true;
-    return wasSet;
+    this.price = aPrice;
   }
 
-  public boolean setDatePosted(LocalDate aDatePosted)
+  public void setDatePosted(LocalDate aDatePosted)
   {
-    boolean wasSet = false;
-    datePosted = aDatePosted;
-    wasSet = true;
-    return wasSet;
+    this.datePosted = aDatePosted;
   }
 
   public String getBookName()
@@ -160,32 +155,29 @@ public class Listing
     return course;
   }
   /* Code from template association_SetUnidirectionalOne */
-  public boolean setUser(User aNewUser)
+  public void setUser(User aNewUser)
   {
-    boolean wasSet = false;
-    if (aNewUser != null)
-    {
-      user = aNewUser;
-      wasSet = true;
-    }
-    return wasSet;
+    this.user = aNewUser;
   }
   /* Code from template association_SetUnidirectionalOne */
-  public boolean setCourse(Course aNewCourse)
+  public void setCourse(Course aNewCourse)
   {
-    boolean wasSet = false;
-    if (aNewCourse != null)
-    {
-      course = aNewCourse;
-      wasSet = true;
-    }
-    return wasSet;
+    this.course = aNewCourse;
   }
+
+
+    public void removeCourse()
+    {
+       this.course = null;
+    }
+
 
   public void delete()
   {
-    user = null;
-    course = null;
+  
+    this.course.delete();
+    this.user.delete();
+    
   }
 
 
