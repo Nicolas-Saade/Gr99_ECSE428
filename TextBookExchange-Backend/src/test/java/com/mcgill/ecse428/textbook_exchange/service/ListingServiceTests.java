@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -267,7 +268,7 @@ public class ListingServiceTests {
     }
 
     @Test
-    public void testCreateListing_InvalidDateFuture() {
+    public void testCreateListing_InvalidDateFuture_InvalidDate() {
         TextBookExchangeException ex = assertThrows(TextBookExchangeException.class, () -> {
             listingService.createListing(
                 "book1",
@@ -283,6 +284,43 @@ public class ListingServiceTests {
         assertTrue(ex.getMessage().contains("Bad date."));
         verify(mockListingRepository, never()).save(any(Listing.class));
     }
+
+
+
+    @Test
+    public void testCreateListing_InvalidDateFuture() {
+        DateTimeException ex = assertThrows(DateTimeException.class, () -> {
+            listingService.createListing(
+                "book1",
+                "011-0-1-0987654-2",
+                25.17f,
+                LocalDate.of(2025, 12, 32), 
+                VALID_EMAIL,
+                "MATH 109",
+                BookCondition.New
+            );
+        });
+        verify(mockListingRepository, never()).save(any(Listing.class));
+    }
+
+ 
+    @Test
+    public void testCreateListing_InvalidDateZeroes() {
+        DateTimeException ex = assertThrows(DateTimeException.class, () -> {
+            listingService.createListing(
+                "book3",
+                "921-2-8-0987235-1",
+                45.17f,
+                LocalDate.of(0, 0, 0), 
+                VALID_EMAIL,
+                "ANAT 279",
+                BookCondition.New
+            );
+        });
+        verify(mockListingRepository, never()).save(any(Listing.class));
+    }
+
+
 
     @Test
     public void testCreateListing_InvalidCourseCode() {
