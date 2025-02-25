@@ -25,9 +25,6 @@ public class Institution
   
  
 
-  public Institution() {
-    // Required empty constructor for JPA
-  }
 
   public Institution(String aInstitutionName)
   {
