@@ -3,12 +3,14 @@ package com.mcgill.ecse428.textbook_exchange.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -243,7 +245,7 @@ public class AccountServiceTests {
     }
 
     
-    // //==================== User Tests ====================
+    //==================== User Tests ====================
     
     @Test
 public void testCreateValidUser() {
@@ -291,6 +293,15 @@ public void testCreateUserWithEmptyPassword() {
         () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, INVALID_EMPTY, VALID_PHONE_USER));
     assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     assertEquals("Password cannot be empty", exception.getMessage());
+    verify(mockUserRepository, never()).save(any(User.class));
+}
+
+@Test
+public void testCreateUserWithShortPassword() {
+    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+        () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, "short", VALID_PHONE_USER));
+    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+    assertEquals("Password must be at least 8 characters long", exception.getMessage());
     verify(mockUserRepository, never()).save(any(User.class));
 }
 
@@ -419,6 +430,137 @@ public void testUpdateUserNotFound() {
     assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
     assertEquals("User not found", exception.getMessage());
     verify(mockUserRepository, never()).save(any(User.class));
+}
+
+@Test
+public void testUpdateUserWithInvalidPhoneNumber() {
+    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+    when(mockUserRepository.save(any(User.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    
+    String newUsername = "updatedUser";
+    String newPassword = "updatedPass";
+    String newPhone = "123aa";
+    
+    User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
+
+    assertNotNull(updated);
+    assertEquals(newUsername, updated.getUsername());
+    assertEquals(newPassword, updated.getPassword());
+    assertEquals(VALID_PHONE_USER, updated.getPhoneNumber());
+}
+
+@Test
+public void testUpdateUserWithInvalidSpecialCharactersPhoneNumber() {
+    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+    when(mockUserRepository.save(any(User.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    
+    String newUsername = "updatedUser";
+    String newPassword = "updatedPass";
+    String newPhone = "1231231234@";
+
+    User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
+
+    assertNotNull(updated);
+    assertEquals(newUsername, updated.getUsername());
+    assertEquals(newPassword, updated.getPassword());
+    assertEquals(VALID_PHONE_USER, updated.getPhoneNumber());
+}
+@Test
+public void testUpdateUserWithEmptyPhoneNumber() {
+    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+    when(mockUserRepository.save(any(User.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    
+    String newUsername = "updatedUser";
+    String newPassword = "updatedPass";
+    String newPhone = "";
+    
+    User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
+
+    assertNotNull(updated);
+    assertEquals(newUsername, updated.getUsername());
+    assertEquals(newPassword, updated.getPassword());
+    assertEquals(VALID_PHONE_USER, updated.getPhoneNumber());
+}
+
+@Test
+public void testUpdateUserWithEmptyPassword() {
+    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+    when(mockUserRepository.save(any(User.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    
+    String newUsername = "updatedUser";
+    String newPassword = "";
+    String newPhone = "3333333333";
+    
+    User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
+
+    assertNotNull(updated);
+    assertEquals(newUsername, updated.getUsername());
+    assertEquals(VALID_PASSWORD_USER, updated.getPassword());
+    assertEquals(newPhone, updated.getPhoneNumber());
+}
+
+@Test
+public void testUpdateUserWithWeakPassword() {
+    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+    
+    String newUsername = "updatedUser";
+    String newPassword = "weak";
+    String newPhone = "3333333333";
+    
+    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+        () -> accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone));
+
+    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+    assertEquals("Password must be at least 8 characters long", exception.getMessage());
+}
+
+@Test
+public void testUpdateUserWithSamePassword() {
+    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+    
+    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+        () -> accountService.updateUser(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER));
+
+    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+    assertEquals("New password cannot be the same as the old password", exception.getMessage());
+}
+
+@Test
+public void testUpdateUserWithNoUppercaseLetter() {
+    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+
+    String lowercasePassword = "lowercasepassword";
+    
+    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+        () -> accountService.updateUser(VALID_EMAIL_USER, VALID_USERNAME_USER, lowercasePassword, VALID_PHONE_USER));
+
+    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+    assertEquals("Password must contain at least one uppercase letter", exception.getMessage());
+}
+
+@Test
+public void testUpdateUserWithNoLetter() {
+    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+
+    String onlyNumbersPassword = "1234567890";
+    
+    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+        () -> accountService.updateUser(VALID_EMAIL_USER, VALID_USERNAME_USER, onlyNumbersPassword, VALID_PHONE_USER));
+
+    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+    assertEquals("Password must contain at least one letter", exception.getMessage());
 }
 
 @Test
