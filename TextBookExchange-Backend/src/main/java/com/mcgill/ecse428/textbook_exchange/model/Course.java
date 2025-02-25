@@ -32,7 +32,7 @@ public class Course
   //------------------------
 
   public Course(){
-      // Required empty constructor for JPA
+    // Required empty constructor for JPA
   }
 
   public Course(String courseId,Faculty aFaculty)
