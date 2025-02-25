@@ -98,6 +98,16 @@ public class AccountService {
         if (password == null || password.trim().isEmpty()) {
             throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Password cannot be empty");
         }
+        if (password.length() < 8) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Password must be at least 8 characters long");
+        }
+        // Check if the password is only numbers
+        if (password.replaceAll("[^0-9]", "").length() == password.length()) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Password must contain at least one letter");
+        }
+        if (password.toLowerCase().equals(password)){
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Password must contain at least one uppercase letter");
+        }
         if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
             throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Phone number cannot be empty");
         }
@@ -134,6 +144,19 @@ public class AccountService {
             user.setUsername(username);
         }
         if (password != null && !password.trim().isEmpty()) {
+            if (password.length() < 8) {
+                throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Password must be at least 8 characters long");
+            }
+            // Check if the password is only numbers
+            if (password.replaceAll("[^0-9]", "").length() == password.length()) {
+                throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Password must contain at least one letter");
+            }
+            if (password.toLowerCase().equals(password)){
+                throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Password must contain at least one uppercase letter");
+            }
+            if (user.getPassword().equals(password)) {
+                throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"New password cannot be the same as the old password");
+            }
             user.setPassword(password);
         }
         if (phoneNumber != null && !phoneNumber.trim().isEmpty() && phoneNumber.replaceAll("[^0-9]", "").length() == phoneNumber.length()) {
