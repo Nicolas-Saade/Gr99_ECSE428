@@ -1,6 +1,8 @@
 package com.mcgill.ecse428.textbook_exchange.repository;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.refEq;
+
 import com.mcgill.ecse428.textbook_exchange.model.Account;
 import com.mcgill.ecse428.textbook_exchange.model.Admin;
 import com.mcgill.ecse428.textbook_exchange.model.Cart;
@@ -103,14 +105,20 @@ public class ListingRepositoryTest {
         float price = 99;
         LocalDate date = LocalDate.of(2019,8 , 2);
 
+        
 
-        Listing listing = new Listing(ISBN, bookName, price, date, user, course);
-     
-     
+        Listing listing = new Listing(bookName, ISBN, price, date, user, course);
+
+        
+        
         listing = listingRepository.save(listing);
         Listing listingRetreived = listingRepository.findByISBN(ISBN);
         
-        assertNotNull(listingRetreived);    
+
+
+        assertNotNull(listingRetreived); 
+        
+
         assertEquals(ISBN, listingRetreived.getISBN());
         assertEquals(bookName, listingRetreived.getBookName()); 
         assertEquals(price, listingRetreived.getPrice());
@@ -165,7 +173,7 @@ public class ListingRepositoryTest {
         LocalDate date = LocalDate.of(2019,8 , 2);
 
 
-        Listing listing = new Listing(ISBN, bookName, price, date, user, course);
+        Listing listing = new Listing(bookName, ISBN, price, date, user, course);
         
         float newPrice = 100;
         listing.setPrice(newPrice);
@@ -230,7 +238,7 @@ public class ListingRepositoryTest {
         LocalDate date = LocalDate.of(2019,8 , 2);
 
 
-        Listing listing = new Listing(ISBN, bookName, price, date, user, course);
+        Listing listing = new Listing(bookName, ISBN, price, date, user, course);
         
         String newBookName = "Harry Potter and the Chamber of Secrets";
         listing.setBookName(newBookName);

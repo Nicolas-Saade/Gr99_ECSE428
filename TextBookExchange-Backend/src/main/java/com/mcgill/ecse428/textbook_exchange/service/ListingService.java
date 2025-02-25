@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import com.mcgill.ecse428.textbook_exchange.exception.TextBookExchangeException;
 import com.mcgill.ecse428.textbook_exchange.model.Cart;
 import com.mcgill.ecse428.textbook_exchange.model.CartItem;
+import com.mcgill.ecse428.textbook_exchange.model.Course;
 import com.mcgill.ecse428.textbook_exchange.model.Listing;
 import com.mcgill.ecse428.textbook_exchange.repository.CartItemRepository;
 import com.mcgill.ecse428.textbook_exchange.repository.CartRepository;
@@ -127,5 +128,61 @@ public class ListingService {
         Listing listing = getListingByISBN(ISBN);
         listing.setUser(userRepository.findByEmail(email));
     }
+
+    @Transactional
+public Listing createListing(String bookName, String ISBN, float price, LocalDate datePosted, String username, String courseCode, BookCondition condition) {
+    // Validate input parameters
+    if (bookName == null || bookName.trim().isEmpty()) {
+        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad book name.");
+    }
+    
+    if (ISBN == null || ISBN.trim().isEmpty() || !isValidISBN(ISBN)) {
+        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad ISBN.");
+    }
+    
+    if (price <= 0) {
+        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad price.");
+    }
+    
+    if (datePosted == null || datePosted.isAfter(LocalDate.now())) {
+        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad date.");
+    }
+    
+    if (username == null || username.trim().isEmpty()) {
+        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad username.");
+    }
+    
+    if (courseCode == null || courseCode.trim().isEmpty()) {
+        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad course code.");
+    }
+
+    // Ensure the user exists
+    User user = userRepository.findByEmail(username);
+    if (user == null) {
+        throw new TextBookExchangeException(HttpStatus.NOT_FOUND, "User not found.");
+    }
+
+    // Ensure the course exists
+    Course course = courseRepository.findByCourseId(courseCode);
+    if (course == null) {
+        throw new TextBookExchangeException(HttpStatus.NOT_FOUND, "Course not found.");
+    }
+
+    // Ensure the listing does not already exist
+    if (listingRepository.findByISBN(ISBN) != null) {
+        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Listing already exists.");
+    }
+
+    // Create and save the listing
+    Listing listing = new Listing(bookName, ISBN, price, datePosted, user, course);
+    listing.setBookcondition(condition);
+
+    return listingRepository.save(listing);
+    }
+
+    private boolean isValidISBN(String ISBN) {
+        return ISBN.matches("\\d{3}-\\d-\\d{1,5}-\\d{1,7}-\\d"); // Basic ISBN format validation
+    }
+
 
 }
