@@ -29,10 +29,10 @@ public class Course
   // CONSTRUCTOR
   //------------------------
 
-  protected Course() {
+  public Course() {
     // Required empty constructor for JPA
   }
-  
+
   public Course(String courseId,Faculty aFaculty)
   {
     if (aFaculty == null)

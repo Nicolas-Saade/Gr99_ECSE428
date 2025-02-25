@@ -441,7 +441,7 @@ public void testUpdateUserWithInvalidPhoneNumber() {
     
     String newUsername = "updatedUser";
     String newPassword = "updatedPass";
-    String newPhone = "123aa@x";
+    String newPhone = "123aa";
     
     User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
 
@@ -451,6 +451,24 @@ public void testUpdateUserWithInvalidPhoneNumber() {
     assertEquals(VALID_PHONE_USER, updated.getPhoneNumber());
 }
 
+@Test
+public void testUpdateUserWithInvalidSpecialCharactersPhoneNumber() {
+    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+    when(mockUserRepository.save(any(User.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    
+    String newUsername = "updatedUser";
+    String newPassword = "updatedPass";
+    String newPhone = "1231231234@";
+
+    User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
+
+    assertNotNull(updated);
+    assertEquals(newUsername, updated.getUsername());
+    assertEquals(newPassword, updated.getPassword());
+    assertEquals(VALID_PHONE_USER, updated.getPhoneNumber());
+}
 @Test
 public void testUpdateUserWithEmptyPhoneNumber() {
     User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());

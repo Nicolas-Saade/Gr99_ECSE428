@@ -111,6 +111,9 @@ public class AccountService {
         if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
             throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Phone number cannot be empty");
         }
+        if (phoneNumber.replaceAll("[^0-9]", "").length() != phoneNumber.length()) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Phone number must contain only numbers");
+        }
         Account account = accountRepository.findByEmail(email);
         if (account != null) {
             throw new TextBookExchangeException(HttpStatus.BAD_REQUEST,"Email already exists");
@@ -159,8 +162,10 @@ public class AccountService {
             }
             user.setPassword(password);
         }
-        if (phoneNumber != null && !phoneNumber.trim().isEmpty() && phoneNumber.replaceAll("[^0-9]", "").length() == phoneNumber.length()) {
-            user.setPhoneNumber(phoneNumber);
+        if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
+            if (!(phoneNumber.replaceAll("[^0-9]", "").length() != phoneNumber.length())) {
+                user.setPhoneNumber(phoneNumber);   
+            }
         }
         userRepository.save(user);
         return user;

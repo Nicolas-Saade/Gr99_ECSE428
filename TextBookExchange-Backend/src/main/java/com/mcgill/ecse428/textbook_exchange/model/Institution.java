@@ -23,7 +23,7 @@ public class Institution
   // CONSTRUCTOR
   //------------------------
 
-  protected Institution() {
+  public Institution() {
     // Required empty constructor for JPA
   }
 
