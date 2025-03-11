@@ -36,19 +36,14 @@ public class ListingService {
     @Autowired
     private CourseRepository courseRepository;
 
-
-
-
     @Transactional
     public Listing getListingByISBN(String ISBN) {
         Listing listing = listingRepository.findByISBN(ISBN);
         if (listing == null) {
             throw new TextBookExchangeException(HttpStatus.NOT_FOUND,"Listing not found");
         }
-
         return listing;
     }
-
 
     @Transactional
     public List<Listing> getListingsByBookName(String bookName) {
@@ -56,11 +51,8 @@ public class ListingService {
         if (listings == null) {
             throw new TextBookExchangeException(HttpStatus.NOT_FOUND,"Listings for book name not found");
         }
-
         return listings;
     }
-
-
 
     public void deleteListingByISBN(String ISBN) {
         Listing listing = getListingByISBN(ISBN);
@@ -75,7 +67,7 @@ public class ListingService {
         Listing listing = getListingByISBN(ISBN);
         listing.setPrice(newPrice);
         listingRepository.save(listing);
-    }   
+    }
 
     public void changeListingBookName(String ISBN, String bookName) {
         Listing listing = getListingByISBN(ISBN);
@@ -83,7 +75,6 @@ public class ListingService {
         listingRepository.save(listing);
     }
 
-    
     public void changeListingCondition(String ISBN, BookCondition condition) {
         Listing listing = getListingByISBN(ISBN);
         listing.setBookcondition(condition);
@@ -110,7 +101,6 @@ public class ListingService {
         listingRepository.save(listing);
     }
 
-
     @Transactional
     public void removeCourseFromListing(String ISBN) {
         Listing listing = getListingByISBN(ISBN);
@@ -130,59 +120,47 @@ public class ListingService {
     }
 
     @Transactional
-public Listing createListing(String bookName, String ISBN, float price, LocalDate datePosted, String username, String courseCode, BookCondition condition) {
-    // Validate input parameters
-    if (bookName == null || bookName.trim().isEmpty()) {
-        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad book name.");
-    }
-    
-    if (ISBN == null || ISBN.trim().isEmpty() || !isValidISBN(ISBN)) {
-        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad ISBN.");
-    }
-    
-    if (price <= 0) {
-        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad price.");
-    }
-    
-    if (datePosted == null || datePosted.isAfter(LocalDate.now())) {
-        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad date.");
-    }
-    
-    if (username == null || username.trim().isEmpty()) {
-        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad username.");
-    }
-    
-    if (courseCode == null || courseCode.trim().isEmpty()) {
-        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad course code.");
-    }
+    public Listing createListing(String bookName, String ISBN, float price, LocalDate datePosted, String username, String courseCode, BookCondition condition) {
+        if (bookName == null || bookName.trim().isEmpty()) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad book name.");
+        }
+        if (ISBN == null || ISBN.trim().isEmpty() || !isValidISBN(ISBN)) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Invalid ISBN Format");
+        }
+        if (price <= 0) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Invalid Price");
+        }
+        if (datePosted == null || datePosted.isAfter(LocalDate.now())) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Invalid Date Format");
+        }
+        if (username == null || username.trim().isEmpty()) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Bad username.");
+        }
+        if (courseCode == null || courseCode.trim().isEmpty()) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Invalid Course Code");
+        }
 
-    // Ensure the user exists
-    User user = userRepository.findByEmail(username);
-    if (user == null) {
-        throw new TextBookExchangeException(HttpStatus.NOT_FOUND, "User not found.");
-    }
+        User user = userRepository.findByEmail(username);
+        if (user == null) {
+            throw new TextBookExchangeException(HttpStatus.NOT_FOUND, "User not found.");
+        }
 
-    // Ensure the course exists
-    Course course = courseRepository.findByCourseId(courseCode);
-    if (course == null) {
-        throw new TextBookExchangeException(HttpStatus.NOT_FOUND, "Course not found.");
-    }
+        Course course = courseRepository.findByCourseId(courseCode);
+        if (course == null) {
+            throw new TextBookExchangeException(HttpStatus.NOT_FOUND, "Course not found.");
+        }
 
-    // Ensure the listing does not already exist
-    if (listingRepository.findByISBN(ISBN) != null) {
-        throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Listing already exists.");
-    }
+        if (listingRepository.findByISBN(ISBN) != null) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Listing already exists.");
+        }
 
-    // Create and save the listing
-    Listing listing = new Listing(bookName, ISBN, price, datePosted, user, course);
-    listing.setBookcondition(condition);
+        Listing listing = new Listing(bookName, ISBN, price, datePosted, user, course);
+        listing.setBookcondition(condition);
 
-    return listingRepository.save(listing);
+        return listingRepository.save(listing);
     }
 
     private boolean isValidISBN(String ISBN) {
-        return ISBN.matches("\\d{3}-\\d-\\d{1,5}-\\d{1,7}-\\d"); // Basic ISBN format validation
+        return ISBN.matches("\\d{3}-\\d-\\d{1,5}-\\d{1,7}-\\d");
     }
-
-
 }

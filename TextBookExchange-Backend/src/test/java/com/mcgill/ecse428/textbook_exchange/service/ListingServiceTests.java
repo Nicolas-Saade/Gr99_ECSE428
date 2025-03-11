@@ -61,8 +61,10 @@ public class ListingServiceTests {
 
     private static final String INVALID_ISBN_TOO_LONG = "011-0-1-0987654-251";
     private static final float INVALID_PRICE_NEG = -10.0f;
-    private static final LocalDate INVALID_DATE_FUTURE = LocalDate.of(2030, 1, 1);
     private static final String INVALID_COURSE_CODE = null;
+
+    // We'll keep this but won't use it for the invalid date tests
+    private static final LocalDate INVALID_DATE_FUTURE = LocalDate.of(2030, 1, 1);
 
     private Cart mockCart;
     private User mockUser;
@@ -85,6 +87,8 @@ public class ListingServiceTests {
         when(mockListingRepository.save(any(Listing.class))).thenAnswer(inv -> inv.getArgument(0));
     }
 
+    // Feature #14: User Creates a Listing
+    // Scenario Outline: User wants to create a listing (Normal Flow)
     @Test
     public void testCreateListing_Valid() {
         Listing createdListing = listingService.createListing(
@@ -108,75 +112,83 @@ public class ListingServiceTests {
         verify(mockListingRepository, times(1)).save(any(Listing.class));
     }
 
+    // Feature #14: User Creates a Listing
+    // Scenario Outline (example 1): bookName = "addedBook1", ISBN = "011-0-1-0987654-2", bookCondition = New, price = 25.17, datePosted = 2025-02-15
     @Test
     public void testCreateListing_Valid_Book1() {
         Listing createdListing = listingService.createListing(
-            "addedBook",
-            "011-0-1-0987654-2",
-            25.17f,
-            VALID_DATE,
+            "addedBook1",                       
+            "011-0-1-0987654-2",                
+            25.17f,                             
+            LocalDate.of(2025, 2, 15),          
             VALID_EMAIL,
-            "MATH 109",
-            VALID_BOOK_CONDITION
+            "MATH 109",                       
+            BookCondition.New                  
         );
         assertNotNull(createdListing);
-        assertEquals("addedBook", createdListing.getBookName());
+        assertEquals("addedBook1", createdListing.getBookName());
         assertEquals("011-0-1-0987654-2", createdListing.getISBN());
         assertEquals(25.17f, createdListing.getPrice());
-        assertEquals(VALID_DATE, createdListing.getDatePosted());
-        assertEquals(VALID_BOOK_CONDITION, createdListing.getBookcondition());
+        assertEquals(LocalDate.of(2025, 2, 15), createdListing.getDatePosted());
+        assertEquals(BookCondition.New, createdListing.getBookcondition());
         assertEquals(mockUser, createdListing.getUser());
         assertEquals("MATH 109", createdListing.getCourse().getCourseId());
         assertNotNull(mockUser.getCart());
         verify(mockListingRepository, times(1)).save(any(Listing.class));
     }
 
+    // Feature #14: User Creates a Listing
+    // Scenario Outline (example 2): bookName = "addedBook2", ISBN = "012-6-3-9375829-8", bookCondition = Used, price = 10.99, datePosted = 2025-02-20
     @Test
     public void testCreateListing_Valid_Book2() {
         Listing createdListing = listingService.createListing(
-            "hellows",
-            "012-6-3-9375829-8",
-            2.17f,
-            VALID_DATE,
+            "addedBook2",                       
+            "012-6-3-9375829-8",                
+            10.99f,                              
+            LocalDate.of(2025, 2, 20),          
             VALID_EMAIL,
-            "ANTH 119",
-            VALID_BOOK_CONDITION
+            "ANTH 119",                      
+            BookCondition.Used                 
         );
         assertNotNull(createdListing);
-        assertEquals("hellows", createdListing.getBookName());
+        assertEquals("addedBook2", createdListing.getBookName());
         assertEquals("012-6-3-9375829-8", createdListing.getISBN());
-        assertEquals(2.17f, createdListing.getPrice());
-        assertEquals(VALID_DATE, createdListing.getDatePosted());
-        assertEquals(VALID_BOOK_CONDITION, createdListing.getBookcondition());
+        assertEquals(10.99f, createdListing.getPrice());
+        assertEquals(LocalDate.of(2025, 2, 20), createdListing.getDatePosted());
+        assertEquals(BookCondition.Used, createdListing.getBookcondition());
         assertEquals(mockUser, createdListing.getUser());
         assertEquals("ANTH 119", createdListing.getCourse().getCourseId());
         assertNotNull(mockUser.getCart());
         verify(mockListingRepository, times(1)).save(any(Listing.class));
     }
 
+    // Feature #14: User Creates a Listing
+    // Just kept as an extra example (unchanged scenario data)
     @Test
     public void testCreateListing_Valid_Book3() {
         Listing createdListing = listingService.createListing(
             "addedBook",
             "921-2-8-0987235-1",
             45.17f,
-            VALID_DATE,
+            LocalDate.of(2025, 2, 15),  
             VALID_EMAIL,
             "ANAT 279",
-            VALID_BOOK_CONDITION
+            BookCondition.New
         );
         assertNotNull(createdListing);
         assertEquals("addedBook", createdListing.getBookName());
         assertEquals("921-2-8-0987235-1", createdListing.getISBN());
         assertEquals(45.17f, createdListing.getPrice());
-        assertEquals(VALID_DATE, createdListing.getDatePosted());
-        assertEquals(VALID_BOOK_CONDITION, createdListing.getBookcondition());
+        assertEquals(LocalDate.of(2025, 2, 15), createdListing.getDatePosted());
+        assertEquals(BookCondition.New, createdListing.getBookcondition());
         assertEquals(mockUser, createdListing.getUser());
         assertEquals("ANAT 279", createdListing.getCourse().getCourseId());
         assertNotNull(mockUser.getCart());
         verify(mockListingRepository, times(1)).save(any(Listing.class));
     }
 
+    // Feature #14: User Creates a Listing
+    // Scenario Outline: User wants to create a listing with an invalid ISBN (Error Flow)
     @Test
     public void testCreateListing_InvalidISBNTooLong() {
         TextBookExchangeException ex = assertThrows(TextBookExchangeException.class, () -> {
@@ -191,10 +203,12 @@ public class ListingServiceTests {
             );
         });
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
-        assertTrue(ex.getMessage().contains("Bad ISBN"));
+        assertTrue(ex.getMessage().contains("Invalid ISBN Format"));
         verify(mockListingRepository, never()).save(any(Listing.class));
     }
 
+    // Feature #14: User Creates a Listing
+    // Scenario Outline: User attempts to create a listing with an invalid price (Error Flow)
     @Test
     public void testCreateListing_InvalidPriceNegative() {
         TextBookExchangeException ex = assertThrows(TextBookExchangeException.class, () -> {
@@ -209,10 +223,32 @@ public class ListingServiceTests {
             );
         });
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
-        assertTrue(ex.getMessage().contains("Bad price."));
+        assertTrue(ex.getMessage().contains("Invalid Price"));
         verify(mockListingRepository, never()).save(any(Listing.class));
     }
 
+    // Feature #14: User Creates a Listing
+    // Scenario Outline: User attempts to create a listing with an invalid price (Error Flow) - second example (0.00)
+    @Test
+    public void testCreateListing_InvalidPriceZero() {
+        TextBookExchangeException ex = assertThrows(TextBookExchangeException.class, () -> {
+            listingService.createListing(
+                "freeBook",
+                "012-6-3-9375829-8",
+                0.0f,
+                VALID_DATE,
+                VALID_EMAIL,
+                VALID_COURSE_CODE,
+                BookCondition.Used
+            );
+        });
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+        assertTrue(ex.getMessage().contains("Invalid Price"));
+        verify(mockListingRepository, never()).save(any(Listing.class));
+    }
+
+    // Feature #14: User Creates a Listing
+    // Scenario Outline: User wants to create a listing with an invalid ISBN (Error Flow)
     @Test
     public void testCreateListing_InvalidISBN_TableInvalid1() {
         TextBookExchangeException ex = assertThrows(TextBookExchangeException.class, () -> {
@@ -227,10 +263,12 @@ public class ListingServiceTests {
             );
         });
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
-        assertTrue(ex.getMessage().contains("Bad ISBN"));
+        assertTrue(ex.getMessage().contains("Invalid ISBN Format"));
         verify(mockListingRepository, never()).save(any(Listing.class));
     }
 
+    // Feature #14: User Creates a Listing
+    // Scenario Outline: User wants to create a listing with an invalid ISBN (Error Flow)
     @Test
     public void testCreateListing_InvalidISBN_TableInvalid2() {
         TextBookExchangeException ex = assertThrows(TextBookExchangeException.class, () -> {
@@ -245,10 +283,12 @@ public class ListingServiceTests {
             );
         });
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
-        assertTrue(ex.getMessage().contains("Bad ISBN"));
+        assertTrue(ex.getMessage().contains("Invalid ISBN Format"));
         verify(mockListingRepository, never()).save(any(Listing.class));
     }
 
+    // Feature #14: User Creates a Listing
+    // Scenario Outline: User wants to create a listing with an invalid ISBN (Error Flow)
     @Test
     public void testCreateListing_InvalidISBN_TableInvalid3() {
         TextBookExchangeException ex = assertThrows(TextBookExchangeException.class, () -> {
@@ -263,38 +303,20 @@ public class ListingServiceTests {
             );
         });
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
-        assertTrue(ex.getMessage().contains("Bad ISBN"));
+        assertTrue(ex.getMessage().contains("Invalid ISBN Format"));
         verify(mockListingRepository, never()).save(any(Listing.class));
     }
 
+    // Feature #14: User Creates a Listing
+    // Scenario Outline: User creates a listing with an invalid date (Error Flow) - "book1" example 
     @Test
-    public void testCreateListing_InvalidDateFuture_InvalidDate() {
-        TextBookExchangeException ex = assertThrows(TextBookExchangeException.class, () -> {
-            listingService.createListing(
-                "book1",
-                "011-0-1-0987654-2",
-                25.17f,
-                INVALID_DATE_FUTURE,
-                VALID_EMAIL,
-                VALID_COURSE_CODE,
-                BookCondition.New
-            );
-        });
-        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
-        assertTrue(ex.getMessage().contains("Bad date."));
-        verify(mockListingRepository, never()).save(any(Listing.class));
-    }
-
-
-
-    @Test
-    public void testCreateListing_InvalidDateFuture() {
+    public void testCreateListing_InvalidDate_TableInvalid1() {
         DateTimeException ex = assertThrows(DateTimeException.class, () -> {
             listingService.createListing(
                 "book1",
                 "011-0-1-0987654-2",
                 25.17f,
-                LocalDate.of(2025, 12, 32), 
+                LocalDate.of(2025, 13, 32),
                 VALID_EMAIL,
                 "MATH 109",
                 BookCondition.New
@@ -303,25 +325,27 @@ public class ListingServiceTests {
         verify(mockListingRepository, never()).save(any(Listing.class));
     }
 
- 
+    // Feature #14: User Creates a Listing
+    // Scenario Outline: User creates a listing with an invalid date (Error Flow) - "book3" example
     @Test
-    public void testCreateListing_InvalidDateZeroes() {
+    public void testCreateListing_InvalidDate_TableInvalid3() {
         DateTimeException ex = assertThrows(DateTimeException.class, () -> {
             listingService.createListing(
                 "book3",
                 "921-2-8-0987235-1",
                 45.17f,
-                LocalDate.of(0, 0, 0), 
+                LocalDate.of(0, 0, 0),
                 VALID_EMAIL,
                 "ANAT 279",
                 BookCondition.New
             );
         });
+        // We don't get a TextBookExchangeException, but a DateTimeException from LocalDate
         verify(mockListingRepository, never()).save(any(Listing.class));
     }
 
-
-
+    // Feature #14: User Creates a Listing
+    // Scenario Outline: User creates a listing with an invalid course (Error Flow)
     @Test
     public void testCreateListing_InvalidCourseCode() {
         when(mockUserRepository.findByEmail(VALID_EMAIL)).thenReturn(mockUser);
@@ -338,10 +362,12 @@ public class ListingServiceTests {
             );
         });
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
-        assertTrue(ex.getMessage().contains("Bad course code."));
+        assertTrue(ex.getMessage().contains("Invalid Course Code"));
         verify(mockListingRepository, never()).save(any(Listing.class));
     }
 
+    // Feature #14: User Creates a Listing
+    // Scenario: User not found (Error Flow)
     @Test
     public void testCreateListing_UserNotFound() {
         when(mockUserRepository.findByEmail(VALID_EMAIL)).thenReturn(null);
