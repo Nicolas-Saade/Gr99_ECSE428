@@ -11,6 +11,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.beans.Transient;
+
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -52,10 +55,10 @@ public class AccountServiceTests {
     private static final String VALID_PHONE_ADMIN = "1234567890";
     
     // Test constants for User
-    private static final String VALID_EMAIL_USER = "user@test.com";
-    private static final String VALID_USERNAME_USER = "normalUser";
-    private static final String VALID_PASSWORD_USER = "userPass";
-    private static final String VALID_PHONE_USER = "0987654321";
+    private static final String VALID_EMAIL_USER = "bob@mail.mcgill.ca";
+    private static final String VALID_USERNAME_USER = "bob123";
+    private static final String VALID_PASSWORD_USER = "OldPass123!";
+    private static final String VALID_PHONE_USER = "5141234567";
     
     // Invalid input constants
     private static final String INVALID_EMPTY = "";
@@ -249,191 +252,279 @@ public class AccountServiceTests {
     
     //==================== User Tests ====================
     
+    // Feature #1: Create new user
+    // Scenario Outline: User creates an account with valid information (Normal Flow)
     @Test
-public void testCreateValidUser() {
-    // No account exists with this email
-    // arrange
-    when(mockAccountRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(null);
-    when(mockCartRepository.save(any(Cart.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
-    when(mockUserRepository.save(any(User.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
-    // act
-    User user = accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER);
-    // assert
-    assertNotNull(user);
-    assertEquals(VALID_EMAIL_USER, user.getEmail());
-    assertEquals(VALID_USERNAME_USER, user.getUsername());
-    assertEquals(VALID_PASSWORD_USER, user.getPassword());
-    assertEquals(VALID_PHONE_USER, user.getPhoneNumber());
-    // Verify that a Cart was created and associated
-    assertNotNull(user.getCart());
-    verify(mockUserRepository, times(1)).save(user);
-}
+    public void testCreateValidUser() {
+        // No account exists with this email
+        // arrange
+        when(mockAccountRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(null);
+        when(mockCartRepository.save(any(Cart.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(mockUserRepository.save(any(User.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        // act
+        User user = accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER);
+        // assert
+        assertNotNull(user);
+        assertEquals(VALID_EMAIL_USER, user.getEmail());
+        assertEquals(VALID_USERNAME_USER, user.getUsername());
+        assertEquals(VALID_PASSWORD_USER, user.getPassword());
+        assertEquals(VALID_PHONE_USER, user.getPhoneNumber());
+        // Verify that a Cart was created and associated
+        assertNotNull(user.getCart());
+        verify(mockUserRepository, times(1)).save(user);
+    }
 
-@Test
-public void testCreateUserWithEmptyEmail() {
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.createUser(INVALID_EMPTY, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER));
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Email cannot be empty", exception.getMessage());
-    verify(mockUserRepository, never()).save(any(User.class));
-}
+    // Feature #1: Create new user
+    // Scenario Outline: User attempts to create an account with empty email (Error Flow)
+    @Test
+    public void testCreateUserWithEmptyEmail() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.createUser(INVALID_EMPTY, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Email cannot be empty", exception.getMessage());
+        verify(mockUserRepository, never()).save(any(User.class));
+    }
 
-@Test
-public void testCreateUserWithEmptyUsername() {
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.createUser(VALID_EMAIL_USER, INVALID_EMPTY, VALID_PASSWORD_USER, VALID_PHONE_USER));
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Username cannot be empty", exception.getMessage());
-    verify(mockUserRepository, never()).save(any(User.class));
-}
+    // Feature #1: Create new user
+    // Scenario Outline: User attempts to create an account with empty username (Error Flow)
+    @Test
+    public void testCreateUserWithEmptyUsername() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.createUser(VALID_EMAIL_USER, INVALID_EMPTY, VALID_PASSWORD_USER, VALID_PHONE_USER));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Username cannot be empty", exception.getMessage());
+        verify(mockUserRepository, never()).save(any(User.class));
+    }
 
-@Test
-public void testCreateUserWithEmptyPassword() {
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, INVALID_EMPTY, VALID_PHONE_USER));
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Password cannot be empty", exception.getMessage());
-    verify(mockUserRepository, never()).save(any(User.class));
-}
+    // Feature #1: Create new user
+    // Scenario Outline: User attempts to create an account with empty password (Error Flow)
+    @Test
+    public void testCreateUserWithEmptyPassword() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, INVALID_EMPTY, VALID_PHONE_USER));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Password cannot be empty", exception.getMessage());
+        verify(mockUserRepository, never()).save(any(User.class));
+    }
 
-@Test
-public void testCreateUserWithShortPassword() {
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, "short", VALID_PHONE_USER));
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Password must be at least 8 characters long", exception.getMessage());
-    verify(mockUserRepository, never()).save(any(User.class));
-}
+    // Feature #1: Create new user
+    // Scenario Outline: User attempts to create an account with password that's too short (Error Flow)
+    @Test
+    public void testCreateUserWithShortPassword() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, "short", VALID_PHONE_USER));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Password must be at least 8 characters long", exception.getMessage());
+        verify(mockUserRepository, never()).save(any(User.class));
+    }
 
-@Test
-public void testCreateUserWithEmptyPhone() {
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, INVALID_EMPTY));
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Phone number cannot be empty", exception.getMessage());
-    verify(mockUserRepository, never()).save(any(User.class));
-}
+    // Feature #1: Create new user
+    // Scenario Outline: User attempts to create an account with empty phone number (Error Flow)
+    @Test
+    public void testCreateUserWithEmptyPhone() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, INVALID_EMPTY));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Phone number cannot be empty", exception.getMessage());
+        verify(mockUserRepository, never()).save(any(User.class));
+    }
 
-@Test
-public void testCreateUserWithNullEmail() {
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.createUser(INVALID_NULL, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER));
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Email cannot be empty", exception.getMessage());
-    verify(mockUserRepository, never()).save(any(User.class));
-}
+    // Feature #1: Create new user
+    // Scenario Outline: User attempts to create an account with null email (Error Flow)
+    @Test
+    public void testCreateUserWithNullEmail() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.createUser(INVALID_NULL, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Email cannot be empty", exception.getMessage());
+        verify(mockUserRepository, never()).save(any(User.class));
+    }
 
-@Test
-public void testCreateUserWithNullUsername() {
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.createUser(VALID_EMAIL_USER, INVALID_NULL, VALID_PASSWORD_USER, VALID_PHONE_USER));
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Username cannot be empty", exception.getMessage());
-    verify(mockUserRepository, never()).save(any(User.class));
-}
+    // Feature #1: Create new user
+    // Scenario Outline: User attempts to create an account with null username (Error Flow)
+    @Test
+    public void testCreateUserWithNullUsername() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.createUser(VALID_EMAIL_USER, INVALID_NULL, VALID_PASSWORD_USER, VALID_PHONE_USER));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Username cannot be empty", exception.getMessage());
+        verify(mockUserRepository, never()).save(any(User.class));
+    }
 
-@Test
-public void testCreateUserWithNullPassword() {
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, INVALID_NULL, VALID_PHONE_USER));
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Password cannot be empty", exception.getMessage());
-    verify(mockUserRepository, never()).save(any(User.class));
-}
+    // Feature #1: Create new user
+    // Scenario Outline: User attempts to create an account with null password (Error Flow)
+    @Test
+    public void testCreateUserWithNullPassword() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, INVALID_NULL, VALID_PHONE_USER));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Password cannot be empty", exception.getMessage());
+        verify(mockUserRepository, never()).save(any(User.class));
+    }
 
-@Test
-public void testCreateUserWithNullPhone() {
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, INVALID_NULL));
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Phone number cannot be empty", exception.getMessage());
-    verify(mockUserRepository, never()).save(any(User.class));
-}
+    // Feature #1: Create new user
+    // Scenario Outline: User attempts to create an account with null phone number (Error Flow)
+    @Test
+    public void testCreateUserWithNullPhone() {
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, INVALID_NULL));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Phone number cannot be empty", exception.getMessage());
+        verify(mockUserRepository, never()).save(any(User.class));
+    }
 
-@Test
-public void testCreateUserWithDuplicateEmail() {
-    // An account already exists with the email
-    Account existing = new User(VALID_EMAIL_USER, "otherUser", "otherPass", "1111111111", new Cart());
-    when(mockAccountRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(existing);
-    
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER));
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Email already exists", exception.getMessage());
-    verify(mockUserRepository, never()).save(any(User.class));
-}
+    // Feature #1: Create new user
+    // Scenario Outline: User attempts to create an account with email that already exists (Error Flow)
+    @Test
+    public void testCreateUserWithDuplicateEmail() {
+        // An account already exists with the email
+        Account existing = new User(VALID_EMAIL_USER, "otherUser", "otherPass", "1111111111", new Cart());
+        when(mockAccountRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(existing);
+        
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.createUser(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Email already exists", exception.getMessage());
+        verify(mockUserRepository, never()).save(any(User.class));
+    }
 
+    @Test
+    public void testGetUserSuccess() {
+        User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+        when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+        
+        User result = accountService.getUser(VALID_EMAIL_USER);
+        assertNotNull(result);
+        assertEquals(VALID_EMAIL_USER, result.getEmail());
+        verify(mockUserRepository, times(1)).findByEmail(VALID_EMAIL_USER);
+    }
+
+    @Test
+    public void testGetUserNotFound() {
+        when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(null);
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.getUser(VALID_EMAIL_USER));
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+        assertEquals("User not found", exception.getMessage());
+        verify(mockUserRepository, times(1)).findByEmail(VALID_EMAIL_USER);
+    }
+
+    // Feature #4: Admin views all accounts
+    // Scenario Outline: Admin requests to view all user accounts (Normal Flow)
+    @Test
+    public void testGetAllUsers() {
+        User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+        User secondUser = new User(VALID_EMAIL_USER + "2", VALID_USERNAME_USER + "2", VALID_PASSWORD_USER + "2", VALID_PHONE_USER + "2", new Cart());
+        when(mockUserRepository.findAll()).thenReturn(java.util.Arrays.asList(user, secondUser));
+        
+        Iterable<Account> result = accountService.getAllUsers();
+        assertNotNull(result);
+        assertEquals(2, ((java.util.List<Account>) result).size());
+        verify(mockUserRepository, times(1)).findAll();
+        assertEquals(user.getEmail(), ((java.util.List<Account>) result).get(0).getEmail());
+        assertEquals(secondUser.getEmail(), ((java.util.List<Account>) result).get(1).getEmail());
+        assertEquals(user.getUsername(), ((java.util.List<Account>) result).get(0).getUsername());
+        assertEquals(secondUser.getUsername(), ((java.util.List<Account>) result).get(1).getUsername());
+        assertEquals(user.getPassword(), ((java.util.List<Account>) result).get(0).getPassword());
+        assertEquals(secondUser.getPassword(), ((java.util.List<Account>) result).get(1).getPassword());
+        assertEquals(user.getPhoneNumber(), ((java.util.List<Account>) result).get(0).getPhoneNumber());
+        assertEquals(secondUser.getPhoneNumber(), ((java.util.List<Account>) result).get(1).getPhoneNumber());
+    }
+
+    @Test
+    public void testUpdateUserSuccess() {
+        User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+        when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+        when(mockUserRepository.save(any(User.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        
+        String newUsername = "updatedUser";
+        String newPassword = "updatedPass";
+        String newPhone = "3333333333";
+        User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
+        
+        assertNotNull(updated);
+        assertEquals(newUsername, updated.getUsername());
+        assertEquals(newPassword, updated.getPassword());
+        assertEquals(newPhone, updated.getPhoneNumber());
+    }
+
+// Feature #3: Update user account
+// Scenario Outline: User updates phone number successfully (Normal Flow)
 @Test
-public void testGetUserSuccess() {
+public void testUpdateUserPhoneSuccess() {
     User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
     when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+    when(mockUserRepository.save(any(User.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
     
-    User result = accountService.getUser(VALID_EMAIL_USER);
-    assertNotNull(result);
-    assertEquals(VALID_EMAIL_USER, result.getEmail());
-    verify(mockUserRepository, times(1)).findByEmail(VALID_EMAIL_USER);
-}
-
-@Test
-public void testGetUserNotFound() {
-    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(null);
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.getUser(VALID_EMAIL_USER));
-    assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
-    assertEquals("User not found", exception.getMessage());
-    verify(mockUserRepository, times(1)).findByEmail(VALID_EMAIL_USER);
-}
-
-@Test
-public void testGetAllUsers() {
-    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
-    User secondUser = new User(VALID_EMAIL_USER + "2", VALID_USERNAME_USER + "2", VALID_PASSWORD_USER + "2", VALID_PHONE_USER + "2", new Cart());
-    when(mockUserRepository.findAll()).thenReturn(java.util.Arrays.asList(user, secondUser));
+    String newUsername = "";
+    String newPassword = "";
+    String newPhone = "5149876543";
+    User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
     
-    Iterable<Account> result = accountService.getAllUsers();
-    assertNotNull(result);
-    assertEquals(2, ((java.util.List<Account>) result).size());
-    verify(mockUserRepository, times(1)).findAll();
-    assertEquals(user.getEmail(), ((java.util.List<Account>) result).get(0).getEmail());
-    assertEquals(secondUser.getEmail(), ((java.util.List<Account>) result).get(1).getEmail());
-    assertEquals(user.getUsername(), ((java.util.List<Account>) result).get(0).getUsername());
-    assertEquals(secondUser.getUsername(), ((java.util.List<Account>) result).get(1).getUsername());
-    assertEquals(user.getPassword(), ((java.util.List<Account>) result).get(0).getPassword());
-    assertEquals(secondUser.getPassword(), ((java.util.List<Account>) result).get(1).getPassword());
-    assertEquals(user.getPhoneNumber(), ((java.util.List<Account>) result).get(0).getPhoneNumber());
-    assertEquals(secondUser.getPhoneNumber(), ((java.util.List<Account>) result).get(1).getPhoneNumber());
+    assertNotNull(updated);
+    assertEquals(newPhone, updated.getPhoneNumber());
+    assertEquals(VALID_USERNAME_USER, updated.getUsername());
+    assertEquals(VALID_PASSWORD_USER, updated.getPassword());
 }
 
+// Feature #3: Update user account
+// Scenario Outline: User updates password successfully (Normal Flow)
 @Test
-public void testUpdateUserSuccess() {
+public void testUpdateUserPasswordSuccess() {
     User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
     when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
     when(mockUserRepository.save(any(User.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
     
-    String newUsername = "updatedUser";
-    String newPassword = "updatedPass";
-    String newPhone = "3333333333";
+    String newUsername = "";
+    String newPassword = "NewPass123!";
+    String newPhone = "";
+    User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
+    
+    assertNotNull(updated);
+    assertEquals(newPassword, updated.getPassword());
+    assertEquals(VALID_USERNAME_USER, updated.getUsername());
+    assertEquals(VALID_PHONE_USER, updated.getPhoneNumber());
+}
+
+// Feature #3: Update user account
+// Scenario Outline: User updates username successfully (Normal Flow)
+@Test
+public void testUpdateUserUsernameSuccess() {
+    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+    when(mockUserRepository.save(any(User.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    
+    String newUsername = "bob_new123";
+    String newPassword = "";
+    String newPhone = "";
     User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
     
     assertNotNull(updated);
     assertEquals(newUsername, updated.getUsername());
-    assertEquals(newPassword, updated.getPassword());
-    assertEquals(newPhone, updated.getPhoneNumber());
+    assertEquals(VALID_PHONE_USER, updated.getPhoneNumber());
+    assertEquals(VALID_PASSWORD_USER, updated.getPassword());
 }
 
+// Feature #3: Update user account
+// Scenario Outline: User not found when trying to update one or more fields (Error Flow)
 @Test
 public void testUpdateUserNotFound() {
-    when(mockUserRepository.findByEmail(VALID_EMAIL_USER + "x")).thenReturn(null);
+    when(mockUserRepository.findByEmail("nonexistent@mail.com")).thenReturn(null);
     TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.updateUser(VALID_EMAIL_USER + "x", VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER));
+        () -> accountService.updateUser("nonexistent@mail.com", VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER));
     assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
     assertEquals("User not found", exception.getMessage());
     verify(mockUserRepository, never()).save(any(User.class));
 }
 
+// Feature #3: Update user account
+// Scenario Outline (test 1): User attempts to update account with an invalid phone number (Error Flow)
 @Test
 public void testUpdateUserWithInvalidPhoneNumber() {
     User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
@@ -443,16 +534,17 @@ public void testUpdateUserWithInvalidPhoneNumber() {
     
     String newUsername = "updatedUser";
     String newPassword = "updatedPass";
-    String newPhone = "123aa";
+    String newPhone = "1234abc567";
     
     User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
+        assertNotNull(updated);
+        assertEquals(newUsername, updated.getUsername());
+        assertEquals(newPassword, updated.getPassword());
+        assertEquals(VALID_PHONE_USER, updated.getPhoneNumber());
+    }
 
-    assertNotNull(updated);
-    assertEquals(newUsername, updated.getUsername());
-    assertEquals(newPassword, updated.getPassword());
-    assertEquals(VALID_PHONE_USER, updated.getPhoneNumber());
-}
-
+// Feature #3: Update user account
+// Scenario Outline (test 2): User attempts to update account with an invalid phone number (Error Flow)
 @Test
 public void testUpdateUserWithInvalidSpecialCharactersPhoneNumber() {
     User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
@@ -471,60 +563,26 @@ public void testUpdateUserWithInvalidSpecialCharactersPhoneNumber() {
     assertEquals(newPassword, updated.getPassword());
     assertEquals(VALID_PHONE_USER, updated.getPhoneNumber());
 }
+
+// Feature #3: Update user account
+// Scenario Outline: User attempts to update account with a short password (Error Flow)
 @Test
-public void testUpdateUserWithEmptyPhoneNumber() {
-    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
-    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
-    when(mockUserRepository.save(any(User.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
-    
-    String newUsername = "updatedUser";
-    String newPassword = "updatedPass";
-    String newPhone = "";
-    
-    User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
-
-    assertNotNull(updated);
-    assertEquals(newUsername, updated.getUsername());
-    assertEquals(newPassword, updated.getPassword());
-    assertEquals(VALID_PHONE_USER, updated.getPhoneNumber());
-}
-
-@Test
-public void testUpdateUserWithEmptyPassword() {
-    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
-    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
-    when(mockUserRepository.save(any(User.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
-    
-    String newUsername = "updatedUser";
-    String newPassword = "";
-    String newPhone = "3333333333";
-    
-    User updated = accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone);
-
-    assertNotNull(updated);
-    assertEquals(newUsername, updated.getUsername());
-    assertEquals(VALID_PASSWORD_USER, updated.getPassword());
-    assertEquals(newPhone, updated.getPhoneNumber());
-}
-
-@Test
-public void testUpdateUserWithWeakPassword() {
+public void testUpdateUserWithShortPassword() {
     User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
     when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
     
     String newUsername = "updatedUser";
-    String newPassword = "weak";
+    String newPassword = "short";
     String newPhone = "3333333333";
     
     TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone));
+        () -> accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone))
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Password must be at least 8 characters long", exception.getMessage());
+    }
 
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Password must be at least 8 characters long", exception.getMessage());
-}
-
+// Feature #3: Update user account
+// Scenario Outline: User attempts to update account with the same password (Error Flow)
 @Test
 public void testUpdateUserWithSamePassword() {
     User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
@@ -532,38 +590,38 @@ public void testUpdateUserWithSamePassword() {
     
     TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
         () -> accountService.updateUser(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("New password cannot be the same as the old password", exception.getMessage());
+    }
 
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("New password cannot be the same as the old password", exception.getMessage());
-}
-
+// Feature #3: Update user account
+// Scenario Outline: User attempts to update account with a password with no uppercase letters (Error Flow)
 @Test
 public void testUpdateUserWithNoUppercaseLetter() {
     User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
     when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+        String lowercasePassword = "lowercasepassword";
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.updateUser(VALID_EMAIL_USER, VALID_USERNAME_USER, lowercasePassword, VALID_PHONE_USER));
 
-    String lowercasePassword = "lowercasepassword";
-    
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.updateUser(VALID_EMAIL_USER, VALID_USERNAME_USER, lowercasePassword, VALID_PHONE_USER));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Password must contain at least one uppercase letter", exception.getMessage());
+    }
 
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Password must contain at least one uppercase letter", exception.getMessage());
-}
-
+// Feature #3: Update user account
+// Scenario Outline: User attempts to update account with a password with no letters (Error Flow)
 @Test
 public void testUpdateUserWithNoLetter() {
     User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
     when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+        String onlyNumbersPassword = "1234567890";
+        
+        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+            () -> accountService.updateUser(VALID_EMAIL_USER, VALID_USERNAME_USER, onlyNumbersPassword, VALID_PHONE_USER));
 
-    String onlyNumbersPassword = "1234567890";
-    
-    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.updateUser(VALID_EMAIL_USER, VALID_USERNAME_USER, onlyNumbersPassword, VALID_PHONE_USER));
-
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
-    assertEquals("Password must contain at least one letter", exception.getMessage());
-}
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("Password must contain at least one letter", exception.getMessage());
+    }
 
 // ID5 - Scenario: Admin successfully deletes a single user account
 @Test
