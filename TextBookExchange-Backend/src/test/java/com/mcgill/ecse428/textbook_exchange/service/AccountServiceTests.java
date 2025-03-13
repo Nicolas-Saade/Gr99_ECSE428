@@ -228,6 +228,7 @@ public class AccountServiceTests {
         verify(mockAdminRepository, never()).save(any(Admin.class));
     }
     
+    // ID5 - Scenario: Admin successfully deletes a single user account
     @Test
     public void testDeleteAdminSuccess() {
         Admin admin = new Admin(VALID_EMAIL_ADMIN, VALID_USERNAME_ADMIN, VALID_PASSWORD_ADMIN, VALID_PHONE_ADMIN);
@@ -237,6 +238,7 @@ public class AccountServiceTests {
         verify(mockAdminRepository, times(1)).delete(admin);
     }
     
+    // ID5 - Scenario: Admin attempts to delete a non-existent user
     @Test
     public void testDeleteAdminNotFound() {
         when(mockAdminRepository.findByEmail(VALID_EMAIL_ADMIN)).thenReturn(null);
@@ -621,24 +623,26 @@ public void testUpdateUserWithNoLetter() {
         assertEquals("Password must contain at least one letter", exception.getMessage());
     }
 
-    @Test
-    public void testDeleteUserSuccess() {
-        User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
-        when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
-        
-        accountService.deleteUser(VALID_EMAIL_USER);
-        verify(mockUserRepository, times(1)).delete(user);
-    }
+// ID5 - Scenario: Admin successfully deletes a single user account
+@Test
+public void testDeleteUserSuccess() {
+    User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(user);
+    
+    accountService.deleteUser(VALID_EMAIL_USER);
+    verify(mockUserRepository, times(1)).delete(user);
+}
 
-    @Test
-    public void testDeleteUserNotFound() {
-        when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(null);
-        TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-            () -> accountService.deleteUser(VALID_EMAIL_USER));
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
-        assertEquals("User not found", exception.getMessage());
-        verify(mockUserRepository, never()).delete(any(User.class));
-    }
+// ID5 - Scenario: Admin attempts to delete a non-existent user
+@Test
+public void testDeleteUserNotFound() {
+    when(mockUserRepository.findByEmail(VALID_EMAIL_USER)).thenReturn(null);
+    TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
+        () -> accountService.deleteUser(VALID_EMAIL_USER));
+    assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+    assertEquals("User not found", exception.getMessage());
+    verify(mockUserRepository, never()).delete(any(User.class));
+}
 
 }
 
