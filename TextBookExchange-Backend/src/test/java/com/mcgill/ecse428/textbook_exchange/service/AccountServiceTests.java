@@ -66,6 +66,8 @@ public class AccountServiceTests {
     
   
     
+    // Feature #1: Create new user (admin version)
+    // Scenario Outline: Admin creates an account with valid information (Normal Flow)
     @Test
     public void testCreateValidAdmin() {
         // No account exists with this email
@@ -84,6 +86,8 @@ public class AccountServiceTests {
         verify(mockAdminRepository, times(1)).save(admin);
     }
     
+    // Feature #1: Create new user (admin version)
+    // Scenario Outline: Admin attempts to create an account with empty email (Error Flow)
     @Test
     public void testCreateAdminWithEmptyEmail() {
         TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
@@ -92,6 +96,9 @@ public class AccountServiceTests {
         assertEquals("Email cannot be empty", exception.getMessage());
         verify(mockAdminRepository, never()).save(any(Admin.class));
     }
+
+    // Feature #1: Create new user (admin version)
+    // Scenario Outline: Admin attempts to create an account with empty username (Error Flow)
     @Test
     public void testCreateAdminWithEmptyUsername() {
         TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
@@ -100,6 +107,9 @@ public class AccountServiceTests {
         assertEquals("Username cannot be empty", exception.getMessage());
         verify(mockAdminRepository, never()).save(any(Admin.class));
     }
+
+    // Feature #1: Create new user (admin version)
+    // Scenario Outline: Admin attempts to create an account with empty password (Error Flow)
     @Test
     public void testCreateAdminWithEmptyPassword() {
         TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
@@ -108,6 +118,9 @@ public class AccountServiceTests {
         assertEquals("Password cannot be empty", exception.getMessage());
         verify(mockAdminRepository, never()).save(any(Admin.class));
     }
+
+    // Feature #1: Create new user (admin version)
+    // Scenario Outline: Admin attempts to create an account with empty phone number (Error Flow)
     @Test
     public void testCreateAdminWithEmptyPhone() {
         TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
@@ -116,6 +129,9 @@ public class AccountServiceTests {
         assertEquals("Phone number cannot be empty", exception.getMessage());
         verify(mockAdminRepository, never()).save(any(Admin.class));
     }
+
+    // Feature #1: Create new user (admin version)
+    // Scenario Outline: Admin attempts to create an account with null email (Error Flow)
     @Test
     public void testCreateAdminWithNullEmail() {
         TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
@@ -124,6 +140,9 @@ public class AccountServiceTests {
         assertEquals("Email cannot be empty", exception.getMessage());
         verify(mockAdminRepository, never()).save(any(Admin.class));
     }
+
+    // Feature #1: Create new user (admin version)
+    // Scenario Outline: Admin attempts to create an account with null username (Error Flow)
     @Test
     public void testCreateAdminWithNullUsername() {
         TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
@@ -132,6 +151,9 @@ public class AccountServiceTests {
         assertEquals("Username cannot be empty", exception.getMessage());
         verify(mockAdminRepository, never()).save(any(Admin.class));
     }
+
+    // Feature #1: Create new user (admin version)
+    // Scenario Outline: Admin attempts to create an account with null password (Error Flow)
     @Test
     public void testCreateAdminWithNullPassword() {
         TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
@@ -140,6 +162,9 @@ public class AccountServiceTests {
         assertEquals("Password cannot be empty", exception.getMessage());
         verify(mockAdminRepository, never()).save(any(Admin.class));
     }
+
+    // Feature #1: Create new user (admin version)
+    // Scenario Outline: Admin attempts to create an account with null phone number (Error Flow)
     @Test
     public void testCreateAdminWithNullPhone() {
         TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
@@ -149,6 +174,8 @@ public class AccountServiceTests {
         verify(mockAdminRepository, never()).save(any(Admin.class));
     }
     
+    // Feature #1: Create new user (admin version)
+    // Scenario Outline: Admin attempts to create an account with email that already exists (Error Flow)
     @Test
     public void testCreateAdminWithDuplicateEmail() {
         // An account already exists with the email
@@ -182,6 +209,8 @@ public class AccountServiceTests {
         assertEquals("Admin not found", exception.getMessage());
         verify(mockAdminRepository, times(1)).findByEmail(VALID_EMAIL_ADMIN);
     }
+    // Feature #4: Admin views all accounts
+    // Scenario Outline: Admin requests to view all admin accounts (Normal Flow)
     @Test
     public void testGetAllAdmins() {
         Admin admin = new Admin(VALID_EMAIL_ADMIN, VALID_USERNAME_ADMIN, VALID_PASSWORD_ADMIN, VALID_PHONE_ADMIN);
@@ -201,6 +230,8 @@ public class AccountServiceTests {
         assertEquals(secondAdmin.getPhoneNumber(), ((java.util.List<Account>) result).get(1).getPhoneNumber());
     }
     
+    // Feature #3: User updates account (admin version)
+    // Scenario Outline: Admin updates account with valid information (Normal Flow)
     @Test
     public void testUpdateAdminSuccess() {
         Admin admin = new Admin(VALID_EMAIL_ADMIN, VALID_USERNAME_ADMIN, VALID_PASSWORD_ADMIN, VALID_PHONE_ADMIN);
@@ -218,6 +249,9 @@ public class AccountServiceTests {
         assertEquals(newPassword, updated.getPassword());
         assertEquals(newPhone, updated.getPhoneNumber());
     }
+
+    // Feature #3: User updates account (admin version)
+    // Scenario Outline: Admin attempts to update non-existent admin account (Error Flow)
     @Test
     public void testUpdateAdminNotFound() {
         when(mockAdminRepository.findByEmail(VALID_EMAIL_ADMIN+"s")).thenReturn(null);
@@ -433,6 +467,8 @@ public class AccountServiceTests {
         assertEquals(secondUser.getPhoneNumber(), ((java.util.List<Account>) result).get(1).getPhoneNumber());
     }
 
+    // Feature #3: User updates account
+    // Scenario Outline: User updates multiple fields successfully (Normal Flow)
     @Test
     public void testUpdateUserSuccess() {
         User user = new User(VALID_EMAIL_USER, VALID_USERNAME_USER, VALID_PASSWORD_USER, VALID_PHONE_USER, new Cart());
@@ -576,7 +612,7 @@ public void testUpdateUserWithShortPassword() {
     String newPhone = "3333333333";
     
     TextBookExchangeException exception = assertThrows(TextBookExchangeException.class,
-        () -> accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone))
+        () -> accountService.updateUser(VALID_EMAIL_USER, newUsername, newPassword, newPhone));
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
         assertEquals("Password must be at least 8 characters long", exception.getMessage());
     }
