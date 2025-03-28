@@ -12,8 +12,10 @@ import com.mcgill.ecse428.textbook_exchange.service.AccountService;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.cucumber.spring.CucumberContextConfiguration;
 
 @SpringBootTest
+@CucumberContextConfiguration
 public class LoginSteps {
 
     @Autowired
@@ -122,7 +124,7 @@ public class LoginSteps {
     }
 
     // Then the proper error message is displayed.
-    @Then("an {string} message is displayed")
+    @Then("a {string} message is displayed")
     public void an_message_is_displayed(String expectedMessage) {
         assertNotNull(loginErrorMessage, "Expected an error message but login succeeded.");
         assertEquals(expectedMessage, loginErrorMessage);
