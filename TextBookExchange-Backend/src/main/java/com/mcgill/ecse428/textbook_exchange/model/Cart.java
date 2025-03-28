@@ -41,7 +41,6 @@ public class Cart
     cartItems = new ArrayList<CartItem>();
   }
 
-
   //------------------------
   // INTERFACE
   //------------------------

@@ -49,8 +49,6 @@ public class User extends Account
   }
   protected User() {}
 
-  
-
   //------------------------
   // INTERFACE
   //------------------------
@@ -97,6 +95,5 @@ public class User extends Account
     listings.clear();
     super.delete();
   }
-
 
 }
