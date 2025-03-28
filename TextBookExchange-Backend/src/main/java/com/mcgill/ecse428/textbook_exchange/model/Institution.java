@@ -4,6 +4,7 @@
 package com.mcgill.ecse428.textbook_exchange.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 
 // line 48 "../../../../../../model.ump"
 // line 133 "../../../../../../model.ump"
@@ -29,6 +30,9 @@ public class Institution
   public Institution(String aInstitutionName)
   {
     institutionName = aInstitutionName;
+  }
+
+  public Institution() {
   }
 
   //------------------------
