@@ -180,6 +180,17 @@ public class AccountService {
     public void deleteAllUsers() {
         userRepository.deleteAll();
     }
+
+    public Account login(String email, String password) {
+        Account account = accountRepository.findByEmail(email);
+        if (account == null) {
+            throw new TextBookExchangeException(HttpStatus.NOT_FOUND, "No account with this email exists");
+        }
+        if (!account.getPassword().equals(password)) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Incorrect password");
+        }
+        return account;
+    }
     
 
 
