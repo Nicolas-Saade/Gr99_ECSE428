@@ -41,7 +41,8 @@ public class Review
   //------------------------
   // CONSTRUCTOR
   //------------------------
-
+  public Review() {}
+  
   public Review(int aRating, String aMessage, User aUser)
   {
     rating = aRating;
