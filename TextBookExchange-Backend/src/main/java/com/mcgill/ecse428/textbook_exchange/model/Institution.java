@@ -23,7 +23,9 @@ public class Institution
   // CONSTRUCTOR
   //------------------------
   
- 
+ public Institution() {
+
+ }
 
 
   public Institution(String aInstitutionName)
