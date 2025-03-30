@@ -1,9 +1,12 @@
 package com.mcgill.ecse428.textbook_exchange.repository;
 
-import com.mcgill.ecse428.textbook_exchange.model.Review;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
 
-@Repository
-public interface ReviewRepository extends CrudRepository<Review, String> {
+import org.springframework.data.repository.CrudRepository;
+
+
+import com.mcgill.ecse428.textbook_exchange.model.Review;
+
+public interface ReviewRepository extends CrudRepository<Review, Integer> {
+    public Review findById(int reviewId);
+    
 }
