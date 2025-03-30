@@ -23,6 +23,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     runtimeOnly 'org.postgresql:postgresql'
     
+    // H2 in-memory database for tests
+    testRuntimeOnly 'com.h2database:h2'
+    
     // Spring Boot Starter Test (includes many testing libraries)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     
