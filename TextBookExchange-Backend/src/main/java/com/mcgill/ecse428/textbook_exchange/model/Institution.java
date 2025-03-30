@@ -22,7 +22,9 @@ public class Institution
   //------------------------
   // CONSTRUCTOR
   //------------------------
-  
+  public Institution()
+  {
+  }
  
 
 
