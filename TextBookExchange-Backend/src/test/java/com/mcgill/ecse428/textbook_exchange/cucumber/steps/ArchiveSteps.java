@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.mcgill.ecse428.textbook_exchange.model.Admin;
 import com.mcgill.ecse428.textbook_exchange.model.Cart;
 import com.mcgill.ecse428.textbook_exchange.model.Course;
 import com.mcgill.ecse428.textbook_exchange.model.Faculty;
@@ -21,6 +22,7 @@ import com.mcgill.ecse428.textbook_exchange.model.Listing;
 import com.mcgill.ecse428.textbook_exchange.model.Listing.BookCondition;
 import com.mcgill.ecse428.textbook_exchange.model.Listing.ListingStatus;
 import com.mcgill.ecse428.textbook_exchange.model.User;
+import com.mcgill.ecse428.textbook_exchange.repository.AdminRepository;
 import com.mcgill.ecse428.textbook_exchange.repository.CartRepository;
 import com.mcgill.ecse428.textbook_exchange.repository.CourseRepository;
 import com.mcgill.ecse428.textbook_exchange.repository.FacultyRepository;
@@ -58,14 +60,23 @@ public class ArchiveSteps {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AdminRepository adminRepository;
+
     private User userTestAccount;
     private Institution institutionTest;
+    private Admin testAdmin;
 
     @Autowired
     private CartRepository cartRepository;
 
+    private String adminUserName = "admin";
+    private String adminEmail = "admin@example.com";
+
 
     private String errorMessage;
+    private boolean errorOccured = false;
+
     @Before
     public void setUp() {
         institutionTest = new Institution("McGill University");
@@ -89,12 +100,43 @@ public class ArchiveSteps {
         institutionRepository.delete(institutionTest);
     }
 
+    @Given("an administrator is logged into the system")
+    public void anAdministratorIsLoggedIntoTheSystem() {
+        // Check if already exists
+        testAdmin = adminRepository.findByEmail(adminEmail);
+        
+        if (testAdmin == null) {
+            testAdmin = new Admin("admin@example.com", adminUserName, "adminpass", "5141111111");
+            testAdmin = adminRepository.save(testAdmin);
+        }
+    }
     @Given ("a user with email {string} and username {string} is logged into the system")
     public void aUserWithEmailAndUsernameIsLoggedIntoTheSystem(String email, String username) {
         Cart cart = new Cart();
         cart = cartRepository.save(cart);
         userTestAccount = new User(email, username, "password", "5141234567", cart);
         userTestAccount = userRepository.save(userTestAccount);
+    }
+
+    @Given("the listing with ISBN {string} is currently marked as {string}")
+    public void theListingWithISBNIsCurrentlyMarkedAsStatus(String isbn, String status) {
+        Listing listing = listingRepository.findByISBN(isbn);
+        String username = listing.getUser().getUsername();
+
+        if (listing == null) {
+            errorMessage = "Listing not found";
+            return;
+        }
+
+        ListingStatus newStatus = ListingStatus.Unavailable;
+
+        try {
+            // Let the service method handle both update and save
+            listingService.updateListingStatus(username,isbn, newStatus, errorOccured,false);
+            errorOccured = false;
+        } catch (Exception e) {
+            errorMessage = e.getMessage();
+        }
     }
 
     @Given("the listing with ISBN {string} is already marked as {string}")
@@ -111,11 +153,24 @@ public class ArchiveSteps {
 
         try {
             // Let the service method handle both update and save
-            listingService.updateListingStatus(username,isbn, newStatus);
+            listingService.updateListingStatus(username,isbn, newStatus, errorOccured,false);
+            errorOccured = false;
         } catch (Exception e) {
             errorMessage = e.getMessage();
         }
     }
+
+    @Given("the system is experiencing technical issues")
+    public void theSystemIsExperiencingTechnicalIssues() {
+        errorOccured = true;
+        
+    }
+
+    @Then("the listing status should remain unchanged")
+    public void theListingStatusShouldRemainUnchanged() {
+        errorOccured = false;
+    }
+    
 
     @Given ("another user {string} owns a listing with ISBN {string}")
     public void anotherUserOwnsAListing(String username, String isbn){
@@ -148,11 +203,23 @@ public class ArchiveSteps {
     }
 
 
+    @When ("the user {string} attempts to change the status back to {string} for ISBN {string}")
+    public void the_user_attempts_to_change_the_status_back_to_for_ISBN(String username, String status, String isbn) {
+        try {
+            Listing listing = listingRepository.findByISBN(isbn);
+            // throw new Exception("User should not be able to change the status"+ listing.getListingStatus());
+            listingService.updateListingStatus(username, isbn, ListingStatus.Available, errorOccured, errorOccured);
+            
+        } catch (Exception e) {
+            errorMessage = e.getMessage();
+        }
+    }
     @When ("the user {string} attempts to mark the listing with ISBN {string} as sold")
     public void theUserAttemptsToMarkTheListingAsSold(String username, String isbn) {
         try {
             ListingStatus soldStatus  = ListingStatus.Unavailable;
-            listingService.updateListingStatus(username, isbn, soldStatus);
+            listingService.updateListingStatus(username, isbn, soldStatus,errorOccured,false);
+            errorOccured = false;
         } catch (Exception e) {
             errorMessage = e.getMessage();
         }
@@ -163,7 +230,8 @@ public class ArchiveSteps {
     public void theUserAttemptsToMarkTheListingAsSoldAgain(String username, String isbn) {
         try {
             ListingStatus soldStatus  = ListingStatus.Unavailable;
-            listingService.updateListingStatus(username, isbn, soldStatus);
+            listingService.updateListingStatus(username, isbn, soldStatus,errorOccured,false);
+            errorOccured = false;
         } catch (Exception e) {
             errorMessage = e.getMessage();
         }
@@ -175,13 +243,23 @@ public class ArchiveSteps {
     }
         
         
-
+    @When ("the administrator marks the listing with ISBN {string} as sold")
+    public void theAdministratorMarksTheListingAsSold(String isbn) {
+        try {
+            ListingStatus soldStatus  = ListingStatus.Unavailable;
+            listingService.updateListingStatus(adminUserName, isbn, soldStatus,errorOccured,true);
+            errorOccured = false;
+        } catch (Exception e) {
+            errorMessage = e.getMessage();
+        }
+    }
 
     @When("the user {string} marks the listing with ISBN {string} as sold")
     public void theUserMarksTheListingWithISBNAsSold(String username, String isbn) {
         try {
             ListingStatus soldStatus  = ListingStatus.Unavailable;
-            listingService.updateListingStatus(username, isbn, soldStatus);
+            listingService.updateListingStatus(username, isbn, soldStatus,errorOccured, false);
+            errorOccured = false;
             
         } catch (Exception e) {
             errorMessage = e.getMessage();
