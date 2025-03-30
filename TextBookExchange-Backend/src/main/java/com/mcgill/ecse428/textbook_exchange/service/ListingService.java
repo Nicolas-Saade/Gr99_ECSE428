@@ -1,27 +1,31 @@
 package com.mcgill.ecse428.textbook_exchange.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 
 import com.mcgill.ecse428.textbook_exchange.exception.TextBookExchangeException;
-import com.mcgill.ecse428.textbook_exchange.model.Cart;
-import com.mcgill.ecse428.textbook_exchange.model.CartItem;
 import com.mcgill.ecse428.textbook_exchange.model.Course;
+import com.mcgill.ecse428.textbook_exchange.model.Institution;
 import com.mcgill.ecse428.textbook_exchange.model.Listing;
+import com.mcgill.ecse428.textbook_exchange.model.Listing.BookCondition;
+import com.mcgill.ecse428.textbook_exchange.model.Listing.ListingStatus;
+import com.mcgill.ecse428.textbook_exchange.model.User;
 import com.mcgill.ecse428.textbook_exchange.repository.CartItemRepository;
 import com.mcgill.ecse428.textbook_exchange.repository.CartRepository;
 import com.mcgill.ecse428.textbook_exchange.repository.CourseRepository;
+import com.mcgill.ecse428.textbook_exchange.repository.InstitutionRepository;
 import com.mcgill.ecse428.textbook_exchange.repository.ListingRepository;
 import com.mcgill.ecse428.textbook_exchange.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
-
-import org.springframework.stereotype.Service;
-import com.mcgill.ecse428.textbook_exchange.model.User;
-import com.mcgill.ecse428.textbook_exchange.model.Listing.BookCondition;
 
 @Service
 public class ListingService {
@@ -35,6 +39,8 @@ public class ListingService {
     private UserRepository userRepository;
     @Autowired
     private CourseRepository courseRepository;
+    @Autowired
+    private InstitutionRepository institutionRepository;
 
     @Transactional
     public Listing getListingByISBN(String ISBN) {
@@ -162,5 +168,128 @@ public class ListingService {
 
     private boolean isValidISBN(String ISBN) {
         return ISBN.matches("\\d{3}-\\d-\\d{1,5}-\\d{1,7}-\\d");
+    }
+
+    @Transactional
+    public List<Listing> filterListingsByPriceRange(float minPrice, float maxPrice) {
+        if (minPrice < 0 || maxPrice < 0 || minPrice > maxPrice) {
+            throw new IllegalArgumentException("Invalid price range");
+        }
+        
+        List<Listing> allListings = getAllListings();
+        return allListings.stream()
+                .filter(listing -> listing.getPrice() >= minPrice && listing.getPrice() <= maxPrice)
+                .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public List<Listing> filterListingsByCondition(BookCondition condition) {
+        List<Listing> allListings = getAllListings();
+        return allListings.stream()
+                .filter(listing -> listing.getBookcondition() == condition)
+                .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public List<Listing> filterListingsByStatus(ListingStatus status) {
+        List<Listing> allListings = getAllListings();
+        return allListings.stream()
+                .filter(listing -> listing.getListingStatus() == status)
+                .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public List<Listing> filterListingsByCourse(String courseId) {
+        Course course = courseRepository.findByCourseId(courseId);
+        if (course == null) {
+            return new ArrayList<>();
+        }
+        
+        List<Listing> allListings = getAllListings();
+        return allListings.stream()
+                .filter(listing -> listing.getCourse() != null && 
+                        listing.getCourse().getCourseId().equals(courseId))
+                .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public List<Listing> filterListingsByInstitution(String institutionName) {
+        Institution institution = institutionRepository.findByInstitutionName(institutionName);
+        if (institution == null) {
+            return new ArrayList<>();
+        }
+        
+        List<Listing> allListings = getAllListings();
+        for (Listing listing : allListings) {
+            System.out.println("Institution: for listing " + listing.getBookName() + " is " + listing.getCourse().getFaculty().getInstitution().getInstitutionName());
+        }
+        return allListings.stream()
+                .filter(listing -> {
+                    if (listing.getCourse() == null) return false;
+                    if (listing.getCourse().getFaculty() == null) return false;
+                    if (listing.getCourse().getFaculty().getInstitution() == null) return false;
+                    return listing.getCourse().getFaculty().getInstitution()
+                            .getInstitutionName().equals(institutionName);
+                })
+                .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    public List<Listing> filterListingsByConditionAndMaxPrice(BookCondition condition, float maxPrice) {
+        if (maxPrice < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+        
+        List<Listing> allListings = getAllListings();
+        return allListings.stream()
+                .filter(listing -> listing.getBookcondition() == condition && 
+                                  listing.getPrice() <= maxPrice)
+                .collect(Collectors.toList());
+    }
+    
+    @Transactional
+    @SuppressWarnings("unchecked")
+    public List<Listing> filterListingsWithMultipleCriteria(Map<String, Object> criteria) {
+        List<Listing> allListings = getAllListings();
+        
+        List<Listing> filteredListings = new ArrayList<>(allListings);
+        
+        // Apply price range filter if present
+        if (criteria.containsKey("minPrice") && criteria.containsKey("maxPrice")) {
+            float minPrice = (float) criteria.get("minPrice");
+            float maxPrice = (float) criteria.get("maxPrice");
+            
+            filteredListings = filteredListings.stream()
+                    .filter(listing -> listing.getPrice() >= minPrice && 
+                                      listing.getPrice() <= maxPrice)
+                    .collect(Collectors.toList());
+        }
+        
+        // Apply condition filter if present
+        if (criteria.containsKey("condition")) {
+            BookCondition condition = (BookCondition) criteria.get("condition");
+            
+            filteredListings = filteredListings.stream()
+                    .filter(listing -> listing.getBookcondition() == condition)
+                    .collect(Collectors.toList());
+        }
+        
+        // Apply status filter if present
+        if (criteria.containsKey("status")) {
+            ListingStatus status = (ListingStatus) criteria.get("status");
+            
+            filteredListings = filteredListings.stream()
+                    .filter(listing -> listing.getListingStatus() == status)
+                    .collect(Collectors.toList());
+        }
+        
+        return filteredListings;
+    }
+    
+    // Helper method to get all listings
+    private List<Listing> getAllListings() {
+        Iterable<Listing> listingsIterable = listingRepository.findAll();
+        return StreamSupport.stream(listingsIterable.spliterator(), false)
+                .collect(Collectors.toList());
     }
 }
