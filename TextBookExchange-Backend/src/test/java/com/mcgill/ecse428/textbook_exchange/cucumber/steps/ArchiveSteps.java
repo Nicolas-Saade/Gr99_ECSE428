@@ -225,6 +225,22 @@ public class ArchiveSteps {
         }
     }
 
+    @When("the user {string} marks the following listings as sold:")
+    public void theUserMarksTheFollowingListingsAsSold(String username, DataTable dataTable) {
+        List<Map<String, String>> listings = dataTable.asMaps();
+
+        for (Map<String, String> row : listings) {
+            String isbn = row.get("ISBN");
+            try {
+                listingService.updateListingStatus(username, isbn, ListingStatus.Unavailable, errorOccured, false);
+            } catch (Exception e) {
+                errorMessage = e.getMessage();
+            }
+        }
+
+        errorOccured = false;
+    }
+
 
     @When("the user {string} attempts to mark the listing with ISBN {string} as sold again")
     public void theUserAttemptsToMarkTheListingAsSoldAgain(String username, String isbn) {
@@ -280,6 +296,22 @@ public class ArchiveSteps {
         }
     }
 
+    @Then("the listings should be updated with:")
+    public void theListingsShouldBeUpdatedWith(DataTable dataTable) {
+        List<Map<String, String>> expectedListings = dataTable.asMaps();
+
+        for (Map<String, String> expected : expectedListings) {
+            String isbn = expected.get("ISBN");
+            String expectedBookName = expected.get("bookName");
+            ListingStatus expectedStatus = ListingStatus.valueOf(expected.get("listingStatus"));
+
+            Listing actualListing = listingRepository.findByISBN(isbn);
+
+            assertNotNull(actualListing, "Listing not found for ISBN: " + isbn);
+            assertEquals(expectedBookName, actualListing.getBookName(), "Wrong book name for ISBN: " + isbn);
+            assertEquals(expectedStatus, actualListing.getListingStatus(), "Wrong status for ISBN: " + isbn);
+        }
+    }
 
 
 
