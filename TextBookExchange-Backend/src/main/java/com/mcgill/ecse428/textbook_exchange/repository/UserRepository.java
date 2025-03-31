@@ -8,6 +8,6 @@ import com.mcgill.ecse428.textbook_exchange.model.User;
 
 public interface UserRepository extends CrudRepository<Account, String> {
     public User findByEmail(String email);
-    
+    public User findByUsername(String username);
 }
 
