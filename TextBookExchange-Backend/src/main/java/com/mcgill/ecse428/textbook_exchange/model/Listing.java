@@ -130,9 +130,15 @@ public void setBookName(String aBookName)
     return bookcondition;
   }
 
-  public ListingStatus getListingStatus()
+  public String getListingStatus()
   {
-    return listingStatus;
+    if (listingStatus == ListingStatus.Available) {
+      return "Available";
+    } else if (listingStatus == ListingStatus.Unavailable) {
+      return "Unavailable";
+    } else {
+      return null;
+    }
   }
 
   public float getPrice()
@@ -164,6 +170,26 @@ public void setBookName(String aBookName)
   {
     this.course = aNewCourse;
   }
+
+  public void setListingStatus(String status){
+    if (status.equals("Available")) {
+      this.listingStatus = ListingStatus.Available;
+    } else if (status.equals("Unavailable")) {
+      this.listingStatus = ListingStatus.Unavailable;
+    } else {
+      throw new IllegalArgumentException("Invalid status: " + status);
+    }
+  }
+
+  public void setBookcondition(String condition){
+    if (condition.equals("New")) {
+      this.bookcondition = BookCondition.New;
+    } else if (condition.equals("Used")) {
+      this.bookcondition = BookCondition.Used;
+    } else {
+      throw new IllegalArgumentException("Invalid condition: " + condition);
+    }
+    }
 
 
     public void removeCourse()

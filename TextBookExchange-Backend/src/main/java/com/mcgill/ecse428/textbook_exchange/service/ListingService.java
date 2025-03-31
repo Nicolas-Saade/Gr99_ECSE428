@@ -125,6 +125,18 @@ public class ListingService {
         listing.setUser(userRepository.findByEmail(email));
     }
 
+    
+    @Transactional
+    public void changeListingStatus(String ISBN, String status) {
+        Listing listing = getListingByISBN(ISBN);
+        listing.setListingStatus(status);
+    }
+    @Transactional
+    public void changeListingBookCondition(String ISBN, String status) {
+        Listing listing = getListingByISBN(ISBN);
+        listing.setBookcondition(status);
+    }
+
     @Transactional
     public Listing createListing(String bookName, String ISBN, float price, LocalDate datePosted, String username, String courseCode, BookCondition condition) {
         if (bookName == null || bookName.trim().isEmpty()) {
