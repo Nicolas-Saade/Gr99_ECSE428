@@ -72,11 +72,10 @@ public class ListingSearchSteps {
         Cart aCart = new Cart();
         aCart = cartRepository.save(aCart);
         
-        User user = userRepository.findByEmail(aEmail);
-        if (user == null) {
-            user = new User(aEmail, aUsername, aPassword, aPhoneNumber, aCart);
-            user = userRepository.save(user);
-        }
+  
+        User   user = new User(aEmail, aUsername, aPassword, aPhoneNumber, aCart);
+        user = userRepository.save(user);
+        
         
         String institutionName = "McGill University";
         Institution institution = new Institution(institutionName);
@@ -141,11 +140,10 @@ public class ListingSearchSteps {
     
     @Then("the system should return the listing associated with the book title {string}")
     public void the_system_should_return_the_listing_associated_with_the_book_title(String bookName) {
-        assertNotNull(currentSearchResults, "Expected search results but got null.");
-        boolean found = currentSearchResults.stream()
-                            .anyMatch(listing -> listing.getBookName().equals(bookName));
+        assertNotNull(currentSearchResults);
+        boolean found = currentSearchResults.stream().anyMatch(listing -> listing.getBookName().equals(bookName));
 
-        assertTrue(found, "No listing found with the book title " + bookName);
+        assertTrue(found);
 
     }
     
@@ -163,7 +161,7 @@ public class ListingSearchSteps {
     
     @Then("the system should return the listing associated with the ISBN {string}")
     public void the_system_should_return_the_listing_associated_with_the_isbn(String ISBN) {
-        assertNotNull(currentSearchResults, "Expected a listing but got null.");
+        assertNotNull(currentSearchResults);
         Listing listing = currentSearchResults.get(0);
         assertEquals(ISBN, listing.getISBN());
     }
@@ -173,13 +171,13 @@ public class ListingSearchSteps {
     public void the_user_searches_for_listings_with_the_course_code(String courseCode) {
         List<Listing> allListings = (List<Listing>) listingRepository.findAll();
         currentSearchResults = allListings.stream()
-                .filter(listing -> listing.getCourse() != null && courseCode.equals(listing.getCourse().getCourseId()))
+                .filter(listing -> courseCode.equals(listing.getCourse().getCourseId()))
                 .collect(Collectors.toList());
     }
     
     @Then("the system should return listings associated with the course code {string}")
     public void the_system_should_return_listings_associated_with_the_course_code(String courseCode) {
-        assertNotNull(currentSearchResults, "Expected search results but got null.");
+        assertNotNull(currentSearchResults);
         for (Listing listing : currentSearchResults) {
             assertEquals(courseCode, listing.getCourse().getCourseId());
         }
@@ -199,11 +197,10 @@ public class ListingSearchSteps {
     
     @Then("the system should return listings with a price range between 30.00 and 50.00")
     public void the_system_should_return_listings_with_a_price_range_between_and() {
-        assertNotNull(currentSearchResults, "Expected search results but got null.");
+        assertNotNull(currentSearchResults);
         for (Listing listing : currentSearchResults) {
             float price = listing.getPrice();
-            assertTrue(price >= 30.00 && price <= 50.00,
-                    "Listing with price " + price + " is outside the range.");
+            assertTrue(price >= 30.00 && price <= 50.00);
         }
     }
     
@@ -218,10 +215,9 @@ public class ListingSearchSteps {
     
     @Then("the system should return only the Available listings")
     public void the_system_should_return_only_the_available_listings() {
-        assertNotNull(currentSearchResults, "Expected search results but got null.");
+        assertNotNull(currentSearchResults);
         for (Listing listing : currentSearchResults) {
-            assertEquals("Available", listing.getListingStatus(),
-                    "Listing with ISBN " + listing.getISBN() + " is not marked as Available.");
+            assertEquals("Available", listing.getListingStatus());
         }
     }
     
@@ -236,7 +232,7 @@ public class ListingSearchSteps {
     
     @Then("the system should return only listings with Used books")
     public void the_system_should_return_only_listings_with_used_books() {
-        assertNotNull(currentSearchResults, "Expected search results but got null.");
+        assertNotNull(currentSearchResults);
         for (Listing listing : currentSearchResults) {
             assertEquals(Listing.BookCondition.Used, listing.getBookcondition());
         }
@@ -246,7 +242,7 @@ public class ListingSearchSteps {
     @Given("the book title {string} does not exist in the system")
     public void the_book_title_does_not_exist_in_the_system(String bookName) {
         List<Listing> listings = ((Collection<Listing>) listingRepository.findAll()).stream()
-                .filter(l -> l.getBookName().equals(bookName))
+                .filter(listing -> listing.getBookName().equals(bookName))
                 .collect(Collectors.toList());
         for (Listing listing : listings) {
             listingRepository.delete(listing);
@@ -255,7 +251,7 @@ public class ListingSearchSteps {
     
     @Then("the system should display a message: \"No listings found for '{string}'\"")
     public void the_system_should_display_a_message_no_listings_found_for(String bookName) {
-        assertNotNull(currentSearchErrorMessage, "Expected an error message but none was set.");
+        assertNotNull(currentSearchErrorMessage);
         assertEquals("No listings found for '" + bookName + "'", currentSearchErrorMessage);
     }
     
@@ -269,7 +265,7 @@ public class ListingSearchSteps {
     
     @Then("the system should display a message: \"Listing not found\"")
     public void the_system_should_display_a_message_invalid_isbn_format() {
-        assertNotNull(currentSearchErrorMessage, "Expected an error message but none was thrown.");
+        assertNotNull(currentSearchErrorMessage);
         assertEquals("Listing not found", currentSearchErrorMessage);
     }
     
@@ -282,7 +278,7 @@ public class ListingSearchSteps {
     
     @Then("the system should display a message: \"Please enter a search term or select a filter.\"")
     public void the_system_should_display_a_message_please_enter_a_search_term_or_select_a_filter() {
-        assertNotNull(currentSearchErrorMessage, "Expected an error message but none was thrown.");
+        assertNotNull(currentSearchErrorMessage);
         assertEquals("Please enter a search term or select a filter.", currentSearchErrorMessage);
     }
 }
