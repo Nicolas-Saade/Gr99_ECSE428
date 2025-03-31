@@ -130,7 +130,12 @@ public void setBookName(String aBookName)
     return bookcondition;
   }
 
-  public String getListingStatus()
+  public ListingStatus getListingStatus()
+  {
+    return listingStatus;
+  }
+
+  public String getListingStatusString()
   {
     if (listingStatus == ListingStatus.Available) {
       return "Available";

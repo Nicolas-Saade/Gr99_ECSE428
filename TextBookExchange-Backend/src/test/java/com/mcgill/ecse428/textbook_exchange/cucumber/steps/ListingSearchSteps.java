@@ -61,7 +61,7 @@ public class ListingSearchSteps {
     private String currentInvalidISBN;
     
 
-    @Given("the following listings exist:")
+    @Given("the following listings currently exist:")
     public void the_following_listings_exist(DataTable dataTable) {
 
         String aEmail = "test@example.com";
@@ -209,7 +209,7 @@ public class ListingSearchSteps {
     public void the_user_applies_a_filter_to_show_only_available_listings() {
         List<Listing> allListings = (List<Listing>) listingRepository.findAll();
         currentSearchResults = allListings.stream()
-                .filter(listing -> "Available".equalsIgnoreCase(listing.getListingStatus()))
+                .filter(listing -> "Available".equalsIgnoreCase(listing.getListingStatusString()))
                 .collect(Collectors.toList());
     }
     
@@ -217,7 +217,7 @@ public class ListingSearchSteps {
     public void the_system_should_return_only_the_available_listings() {
         assertNotNull(currentSearchResults);
         for (Listing listing : currentSearchResults) {
-            assertEquals("Available", listing.getListingStatus());
+            assertEquals("Available", listing.getListingStatusString());
         }
     }
     
@@ -249,7 +249,7 @@ public class ListingSearchSteps {
         }
     }
     
-    @Then("the system should display a message: \"No listings found for '{string}'\"")
+    @Then("the system should show a message: \"No listings found for '{string}'\"")
     public void the_system_should_display_a_message_no_listings_found_for(String bookName) {
         assertNotNull(currentSearchErrorMessage);
         assertEquals("No listings found for '" + bookName + "'", currentSearchErrorMessage);
@@ -263,7 +263,7 @@ public class ListingSearchSteps {
     
 
     
-    @Then("the system should display a message: \"Listing not found\"")
+    @Then("the system should show a message: \"Listing not found\"")
     public void the_system_should_display_a_message_invalid_isbn_format() {
         assertNotNull(currentSearchErrorMessage);
         assertEquals("Listing not found", currentSearchErrorMessage);
@@ -276,7 +276,7 @@ public class ListingSearchSteps {
         currentSearchErrorMessage = "Please enter a search term or select a filter.";
     }
     
-    @Then("the system should display a message: \"Please enter a search term or select a filter.\"")
+    @Then("the system should show a message: \"Please enter a search term or select a filter.\"")
     public void the_system_should_display_a_message_please_enter_a_search_term_or_select_a_filter() {
         assertNotNull(currentSearchErrorMessage);
         assertEquals("Please enter a search term or select a filter.", currentSearchErrorMessage);
