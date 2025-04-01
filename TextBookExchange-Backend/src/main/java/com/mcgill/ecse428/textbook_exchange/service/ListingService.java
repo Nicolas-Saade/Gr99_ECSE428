@@ -44,9 +44,10 @@ public class ListingService {
 
     @Transactional
     public Listing getListingByISBN(String ISBN) {
+
         Listing listing = listingRepository.findByISBN(ISBN);
         if (listing == null) {
-            throw new TextBookExchangeException(HttpStatus.NOT_FOUND,"Listing not found");
+            throw new TextBookExchangeException(HttpStatus.NOT_FOUND,"Listing not found" );
         }
         return listing;
     }
@@ -90,6 +91,31 @@ public class ListingService {
     public void changeListingDatePosted(String ISBN, LocalDate datePosted) {
         Listing listing = getListingByISBN(ISBN);
         listing.setDatePosted(datePosted);
+        listingRepository.save(listing);
+    }
+
+    public void updateListingStatus(String username,String ISBN, ListingStatus status, boolean errorOccures, boolean isAdmin) {
+        
+        if (errorOccures) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "An error occurred while updating the listing. Please try again later.");
+        }
+        Listing listing = getListingByISBN(ISBN);
+        if (listing == null) {
+            throw new TextBookExchangeException(HttpStatus.NOT_FOUND, "Listing not found");
+        }
+        if ((!username.equals(listing.getUser().getUsername())&& !isAdmin)) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "You are not authorized to mark this listing as sold");
+        }
+        if (listing.getListingStatus() == status && status == ListingStatus.Unavailable) {
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "This listing is already sold");
+        }
+        if (listing.getListingStatus() == ListingStatus.Unavailable){
+            throw new TextBookExchangeException(HttpStatus.BAD_REQUEST, "Cannot change status of a sold listing");
+
+        }
+
+
+        listing.setListingStatus(status);
         listingRepository.save(listing);
     }
 
