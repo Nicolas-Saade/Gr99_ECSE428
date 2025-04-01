@@ -1,15 +1,10 @@
 package com.mcgill.ecse428.textbook_exchange.cucumber.steps;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.Condition;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -37,7 +32,6 @@ import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import net.bytebuddy.agent.ByteBuddyAgent.AttachmentProvider.Accessor.Unavailable;
 
 @SpringBootTest
 public class ArchiveSteps {
@@ -85,7 +79,7 @@ public class ArchiveSteps {
         Cart cart = new Cart();
         cart = cartRepository.save(cart);
 
-        userTestAccount = new User("test@example.com", "testuser", "password", "5141234567", cart);
+        userTestAccount = new User("test2@example.com", "test2user", "password", "5141234567", cart);
         userTestAccount = userRepository.save(userTestAccount);
         
         errorMessage = null;
@@ -110,7 +104,7 @@ public class ArchiveSteps {
             testAdmin = adminRepository.save(testAdmin);
         }
     }
-    @Given ("a user with email {string} and username {string} is logged into the system")
+    @Given ("a user with email {string} and username {string} is logged into the system2")
     public void aUserWithEmailAndUsernameIsLoggedIntoTheSystem(String email, String username) {
         Cart cart = new Cart();
         cart = cartRepository.save(cart);
@@ -171,7 +165,30 @@ public class ArchiveSteps {
         errorOccured = false;
     }
     
+    @Given("the following listings exist2:")
+    public void the_following_listings_exist(DataTable dataTable) {
+        List<Map<String, String>> listings = dataTable.asMaps();
+        
+        for (Map<String, String> listing : listings) {
+            String bookName = listing.get("bookName").replace("\"", "");
+            String isbn = listing.get("ISBN").replace("\"", "");
+            BookCondition condition = BookCondition.valueOf(listing.get("bookCondition").replace("\"", ""));
+            ListingStatus status = ListingStatus.valueOf(listing.get("listingStatus").replace("\"", ""));
+            float price = Float.parseFloat(listing.get("price").replace("\"", ""));
+            LocalDate datePosted = LocalDate.parse(listing.get("datePosted").replace("\"", ""));
+            String courseName = listing.get("course").replace("\"", "");
+            
+            // Create faculty based on the course discipline (e.g., COMP for Computer Science)
+            String discipline = courseName.split(" ")[0];
+            Faculty faculty = facultyRepository.findByDepartmentName(discipline);
+            Faculty faculty2 = facultyRepository.findByDepartmentName(discipline);
 
+            Listing newListing = new Listing(bookName, isbn, price, datePosted, userTestAccount, null);
+            newListing.setBookcondition(condition);
+            newListing.setListingStatus(status);
+            listingRepository.save(newListing);
+        }
+    }
     @Given ("another user {string} owns a listing with ISBN {string}")
     public void anotherUserOwnsAListing(String username, String isbn){
         // Create a new cart
